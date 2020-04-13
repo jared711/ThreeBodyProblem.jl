@@ -3,6 +3,9 @@ uuid = "f5e9ba3c-56cf-4230-8a8f-3a70500a02a9"
 authors = ["Jared Blanchard"]
 version = "0.1.0"
 
+[deps]
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+
 [compat]
 julia = "1"
 
