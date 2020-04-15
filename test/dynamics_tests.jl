@@ -8,5 +8,5 @@ rvdot = zeros(6)
 @test CR3BPdynamics!(rvdot,[0.5;0;0;0;0.5;0],1e-2,0) == nothing
 @test rvdot ==  [0.0;0.5;0.0;-2.2645790609160836;0.0;-0.0]
 
-@test CR3BPdynamics_dim!(rvdot,[1e4;0;0;0;1;0],[398600;4970;384400],0) == nothing
-@test rvdot == [0.0;1.0;0.0;-0.00017644094242182597;0.0;-0.0]
+@test CR3BPdynamics_dim!(rvdot,[1e4;0;0;0;1;0],[398600;4902;384400],0) == nothing
+@test rvdot == [0.0;1.0;0.0;-0.001846732347998331;0.0;-0.0]

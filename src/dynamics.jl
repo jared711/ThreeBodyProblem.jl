@@ -58,8 +58,8 @@ julia> CR3BPdynamics_dim!(rvdot,[1e4;0;0;0;1;0],[398600;4970;384400],0)
 function CR3BPdynamics_dim!(rvdot,rv,p,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
-    R₁ = d*μ₁/(μ₁+μ₂)
-    R₂ = d*μ₂/(μ₁+μ₂)
+    R₁ = d*μ₂/(μ₁+μ₂)
+    R₂ = d*μ₁/(μ₁+μ₂)
     ωₛ = sqrt((μ₁ + μ₂)/d^3)
     r₁³= ((x+R₁)^2 + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
     r₂³= ((x-R₂)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass

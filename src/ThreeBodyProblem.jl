@@ -11,4 +11,7 @@ export R2BPdynamics!,
         CR3BPdynamics!,
         CR3BPdynamics_dim!
 
+include("utils.jl")
+export findL1
+
 end # module
