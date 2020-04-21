@@ -4,7 +4,7 @@ using LinearAlgebra
     R2BPdynamics!(rvdot,rv,μ,t)
 
 Compute change of state vector in restricted two-body system. rv is the state in
-[km] and μ is the gravitational parameter in [km³/s²]
+{km} and μ is the gravitational parameter in {km³/s²}
 
 # Example
 ```jldoctest
@@ -22,8 +22,8 @@ end
 """
     CR3BPdynamics!(rvdot,rv,μ,t)
 
-Compute change of state vector in restricted three-body system. rv is the
-normalized state [NON] and μ is the gravitational parameter in [NON]
+Compute change of state vector in normalized CR3BP. rv is the normalized state
+{NON} and μ is the gravitational parameter {NON}.
 
 # Example
 ```jldoctest
@@ -44,23 +44,25 @@ function CR3BPdynamics!(rvdot,rv,μ,t) #Three body dynamics in Earth/Moon System
 end
 
 """
-    CR3BPdynamics!(rvdot,rv,μ,t)
+    CR3BPdynamics!(rvdot,rv,p::Array,t)
 
-Compute change of state vector in restricted three-body system. rv is the
-normalized state [NON] and μ is the gravitational parameter in [NON]
+Compute change of state vector in non-normalized restricted three-body system.
+rv is the state [r; v] {km; km/s} and p = [μ₁;μ₂;d] {km³/s²; km³/s²; km}
+contains the gravitational parameters of the first and second primary bodies and
+the distance between them.
 
 # Example
 ```jldoctest
 julia> rvdot = zeros(6)
-julia> CR3BPdynamics_dim!(rvdot,[1e4;0;0;0;1;0],[398600;4970;384400],0)
+julia> CR3BPdynamics!(rvdot,[1e4;0;0;0;1;0],[398600;4970;384400],0)
 ```
 """
-function CR3BPdynamics_dim!(rvdot,rv,p,t) #Three body dynamics in Earth/Moon System
+function CR3BPdynamics!(rvdot,rv,p::Array,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
     R₁ = d*μ₂/(μ₁+μ₂)
     R₂ = d*μ₁/(μ₁+μ₂)
-    ωₛ = sqrt((μ₁ + μ₂)/d^3)
+    ωₛ = sqrt((μ₁ + μ₂)/d^3) #rotation rate of system
     r₁³= ((x+R₁)^2 + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
     r₂³= ((x-R₂)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass
     rvdot[1:3] = [vx;vy;vz]
