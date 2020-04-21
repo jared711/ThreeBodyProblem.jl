@@ -6,8 +6,8 @@ makedocs(
     format = Documenter.HTML(prettyurls = false),
     pages = [
         "Introduction" => "index.md"
-        # "Getting Started" => [
-        #     "models.md",
+        "Getting Started" => [
+             "orbitalelements.md"]
         #     "costfunctions.md",
         #     "constraints.md",
         #     "creating_problems.md",
@@ -33,7 +33,7 @@ makedocs(
 # Documenter can also automatically deploy documentation to gh-pages.
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
-deploydocs(
-    repo = "github.com/jared711/ThreeBodyProblem.jl.git",
-    deploy_config=Documenter.Travis(),
-)
+# deploydocs(
+#     repo = "github.com/jared711/ThreeBodyProblem.jl.git",
+#     deploy_config=Documenter.Travis(),
+# )
