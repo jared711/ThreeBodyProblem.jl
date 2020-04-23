@@ -19,6 +19,8 @@ export findL1,
         findL5,
         findLpts,
         findUeff,
-        findC
+        findC,
+        findR1R2,
+        findr1r2
 
 end # module

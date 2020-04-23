@@ -1,4 +1,7 @@
 using ThreeBodyProblem
 using Test
 
-@test rot2inert(1) == 1
+μ = 0.9
+rv = [1;0;0;0;0;0]
+@test rot2inert!(rv,0.,0.9) == nothing
+@test rv == [1;0;0;0;0;0]
