@@ -1,15 +1,24 @@
 module ThreeBodyProblem
 
 include("conversions.jl")
-export rot2inert
+export S2I!
 
 include("dynamics.jl")
 export R2BPdynamics!,
-        CR3BPdynamics!
+        CR3BPdynamics!,
+        CR3BPinert!,
+        CWdynamics!
 
 include("orbitalelements.jl")
 export AP2a,
         findrP
+
+include("plot.jl")
+export plot_sphere,
+        plot_earth,
+        plot_circle,
+        plot_rv
+
 
 include("utils.jl")
 export findL1,
