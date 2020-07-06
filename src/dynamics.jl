@@ -21,6 +21,23 @@ function R2BPdynamics!(rvdot,rv,μ,t)  #make sure rv and μ are in km and km³/s
 end
 
 """
+    CR3BPdynamics(rvdot,rv,μ,t)
+
+Compute change of state vector in normalized CR3BP. rv is the normalized state
+{NON} and μ is the gravitational parameter {NON}.
+"""
+function CR3BPdynamics(rvdot,rv,μ,t) #Three body dynamics in Earth/Moon System
+    x,y,z,vx,vy,vz = rv
+    r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
+    r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass
+    rvdot[1:3] = [vx;vy;vz]
+    rvdot[4] = -((1 - μ)*(x + μ)/r₁³) - (μ*(x - 1 + μ)/r₂³) + 2*vy + x;
+    rvdot[5] = -((1 - μ)*y      /r₁³) - (μ*y          /r₂³) - 2*vx + y;
+    rvdot[6] = -((1 - μ)*z      /r₁³) - (μ*z          /r₂³);
+    return rvdot
+end
+
+"""
     CR3BPdynamics!(rvdot,rv,μ,t)
 
 Compute change of state vector in normalized CR3BP. rv is the normalized state
