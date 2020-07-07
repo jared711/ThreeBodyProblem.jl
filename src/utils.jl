@@ -226,9 +226,8 @@ end
 Find Jacobi constant given normalized state rv {NON} and mass ratio {NON}
 """
 function findC(rv,μ)
-    μ₁,μ₂,d = p
     v = norm(rv[4:6])
-    Ueff = findUeff(rv,p)
+    Ueff = findUeff(rv,μ)
     C = -2*Ueff - v^2
 end
 

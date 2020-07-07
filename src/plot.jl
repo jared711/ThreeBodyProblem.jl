@@ -1,4 +1,5 @@
 using Plots
+plotly()
 
 function plot_sphere(r=1,c=[0,0,0],col='b',n=100)
     u = range(0,stop=2π,length=n)

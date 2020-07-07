@@ -1,5 +1,10 @@
 module ThreeBodyProblem
 
+# export modules # right now I don't have any modules within my module
+#     Dynamics,
+#     Problems,
+#     Controllers
+
 include("conversions.jl")
 export S2I!
 
