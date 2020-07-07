@@ -5,3 +5,6 @@
 [![Codecov](https://codecov.io/gh/jared711/ThreeBodyProblem.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jared711/ThreeBodyProblem.jl)
 
 An astrodynamics package for working in the three body problem.
+
+## Examples
+Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/example)
