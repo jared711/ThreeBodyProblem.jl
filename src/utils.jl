@@ -1,8 +1,7 @@
-
 """
     findR1R2(μ)
 """
-function findR1R2(μ)
+function findR1R2(μ::Number)
     R₁ = -μ
     R₂ = 1-μ
     return R₁, R₂
