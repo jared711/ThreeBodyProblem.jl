@@ -8,3 +8,6 @@ An astrodynamics package for working in the three body problem.
 
 ## Examples
 Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example)
+
+## Documentation
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl)
