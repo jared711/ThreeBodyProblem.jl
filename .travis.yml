@@ -21,3 +21,9 @@ jobs:
   allow_failures:
     - julia: nightly
   fast_finish: true
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $token  # Set in the settings page of your repository, as a secure variable
+  on:
+    branch: gh-pages
