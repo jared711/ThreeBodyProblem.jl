@@ -42,7 +42,9 @@ makedocs(
 # for more information.
 deploydocs(
     repo = "github.com/jared711/ThreeBodyProblem.jl.git",
+    target = "build"
     deploy_config=Documenter.Travis(),
+    push_preview = true,
 )
 
 # Let's see if this will work
