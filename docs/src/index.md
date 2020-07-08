@@ -7,13 +7,9 @@ CurrentModule = ThreeBodyProblem
 ```@contents
 ```
 
-## Functions
-
-```@docs
-AP2a(rA, rP)
-```
-
 - link to [`AP2a(rA, rP)`](@ref)
+
+
 
 
 ## Index
@@ -21,3 +17,4 @@ AP2a(rA, rP)
 ```
 
 1) Convert [Orbital Elements](@ref orbitalelements)
+2) 2 [Utility Functions](@ref util)

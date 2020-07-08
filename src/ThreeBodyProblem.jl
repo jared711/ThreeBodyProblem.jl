@@ -26,7 +26,7 @@ export plot_sphere,
 
 
 include("utils.jl")
-export findL1,
+export  findL1,
         findL2,
         findL3,
         findL4,
