@@ -26,6 +26,10 @@ deploy:
   provider: pages
   skip_cleanup: true
   github_token: $token  # Set in the settings page of your repository, as a secure variable
+<<<<<<< HEAD
   local_dir: docs/build
+=======
+  local_dir: docs
+>>>>>>> e1035658e9f7660823e91f7e03e9ed965920cf64
   on:
     branch: master
