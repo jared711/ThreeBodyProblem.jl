@@ -12,7 +12,7 @@ export AP2a,
         findrP
 
 include("utils.jl")
-export findL1,
+export  findL1,
         findL2,
         findL3,
         findL4,

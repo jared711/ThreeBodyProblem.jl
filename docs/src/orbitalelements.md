@@ -9,3 +9,10 @@ Pages = ["orbitalelements.md"]
 
 ## Overview
 These are the orbital elements
+
+## Functions
+
+```@docs
+AP2a
+findrP
+```

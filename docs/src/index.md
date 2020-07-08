@@ -7,14 +7,9 @@ CurrentModule = ThreeBodyProblem
 ```@contents
 ```
 
-## Functions
-
-```@docs
-AP2a(rA, rP)
-findrP(rv::Array,p::Array)
-```
-
 - link to [`AP2a(rA, rP)`](@ref)
+
+
 
 
 ## Index
@@ -22,3 +17,4 @@ findrP(rv::Array,p::Array)
 ```
 
 1) Convert [Orbital Elements](@ref orbitalelements)
+2) 2 [Utility Functions](@ref util)
