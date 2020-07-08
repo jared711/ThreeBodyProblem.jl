@@ -19,7 +19,7 @@ export plot_sphere,
         plot_circle,
         plot_rv
 
-include("utils.jl")
+include("util.jl")
 export findR1R2,
         findr1r2,
         findL1,

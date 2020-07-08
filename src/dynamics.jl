@@ -1,5 +1,5 @@
 using LinearAlgebra
-include("utils.jl")
+include("util.jl")
 
 """
     R2BPdynamics!(rvdot,rv,μ,t)

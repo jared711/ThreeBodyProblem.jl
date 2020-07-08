@@ -12,6 +12,6 @@ end
     include("dynamics_tests.jl")
 end
 
-@safetestset "utils.jl tests" begin
-    include("utils_tests.jl")
+@safetestset "util.jl tests" begin
+    include("util_tests.jl")
 end
