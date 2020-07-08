@@ -7,4 +7,4 @@
 An astrodynamics package for working in the three body problem.
 
 ## Examples
-Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/example)
+Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example)
