@@ -1,4 +1,4 @@
-# ThreeBodyProblem.jl Documentation
+# [ThreeBodyProblem.jl Documentation](@id introduction)
 
 ```@meta
 CurrentModule = ThreeBodyProblem
@@ -16,5 +16,6 @@ CurrentModule = ThreeBodyProblem
 ```@index
 ```
 
-1) Convert [Orbital Elements](@ref orbitalelements)
-2) 2 [Utility Functions](@ref util)
+1) [Overview](@ref overview)
+2) Convert [Orbital Elements](@ref orbitalelements)
+3) 2 [Utility Functions](@ref util)

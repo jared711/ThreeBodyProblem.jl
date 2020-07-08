@@ -1,15 +1,19 @@
+# make.jl
 push!(LOAD_PATH,"../src/")
 using Documenter
 using ThreeBodyProblem
 
 makedocs(
     sitename = "ThreeBodyProblem",
+    # modules = [ThreeBodyProblem],
     format = Documenter.HTML(prettyurls = false),
     pages = [
         "Introduction" => "index.md"
+        "Overview" => "overview.md"
         "Functions" => [
              "orbitalelements.md",
-             "util.md"]
+             "util.md"
+        ]
         #     "costfunctions.md",
         #     "constraints.md",
         #     "creating_problems.md",
