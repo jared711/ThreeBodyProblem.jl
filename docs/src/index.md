@@ -11,6 +11,7 @@ CurrentModule = ThreeBodyProblem
 
 ```@docs
 AP2a(rA, rP)
+findrP(rv::Array,p::Array)
 ```
 
 - link to [`AP2a(rA, rP)`](@ref)

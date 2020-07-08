@@ -1,3 +1,4 @@
+push!(LOAD_PATH,"../src/")
 using Documenter
 using ThreeBodyProblem
 
@@ -33,7 +34,7 @@ makedocs(
 # Documenter can also automatically deploy documentation to gh-pages.
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
-# deploydocs(
-#     repo = "github.com/jared711/ThreeBodyProblem.jl.git",
-#     deploy_config=Documenter.Travis(),
-# )
+deploydocs(
+    repo = "github.com/jared711/ThreeBodyProblem.jl.git",
+    deploy_config=Documenter.Travis(),
+)
