@@ -122,6 +122,8 @@ end
 
 """
     CWdynamics!(rvdot,rv,t)
+
+Clohessy-Wiltshire equations
 """
 function CWdynamics!(rvdot,rv,n,t)
     x,y,z,vx,vy,vz = rv

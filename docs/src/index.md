@@ -3,19 +3,12 @@
 ```@meta
 CurrentModule = ThreeBodyProblem
 ```
+This package is based on methods and theory taught in Stanford University's AA279 class series. There are also functions related to the dynamical systems work of JPL's Martin Lo.
 
+## Outline
 ```@contents
 ```
 
-- link to [`AP2a(rA, rP)`](@ref)
-
-
-
-
-## Index
+## Index of All Functions
 ```@index
 ```
-
-1) [Overview](@ref overview)
-2) Convert [Orbital Elements](@ref orbitalelements)
-3) 2 [Utility Functions](@ref util)

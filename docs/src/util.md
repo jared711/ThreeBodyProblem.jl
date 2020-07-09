@@ -1,9 +1,9 @@
-# [2. Utility functions](@id util)
+# [Utility functions](@id util)
 ```@meta
 CurrentModule = ThreeBodyProblem
 ```
 ## Overview
-These are the utility functions
+The utility functions are all those functions that didn't fit into the other established categories.
 
 ## Functions
 

@@ -1,5 +1,8 @@
 using SafeTestsets
 
+using Test, Documenter, ThreeBodyProblem
+doctest(ThreeBodyProblem)
+
 @safetestset "orbitalelements.jl tests" begin
     include("orbitalelements_tests.jl")
 end
