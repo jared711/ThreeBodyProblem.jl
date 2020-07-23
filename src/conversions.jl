@@ -1,8 +1,8 @@
 include("util.jl")
-"""
-    S2I!(rv,θ)
-Synodic (rotating) frame to inertial frame
-"""
+# """
+#     S2I!(rv,θ)
+# Synodic (rotating) frame to inertial frame
+# """
 # function rot2inert!(rv, θ, μ; origin=0)
 function S2I!(rv,θ)
     cθ, sθ = cos(θ), sin(θ)
