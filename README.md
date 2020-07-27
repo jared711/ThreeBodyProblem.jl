@@ -6,6 +6,17 @@
 
 An astrodynamics package for working in the three body problem.
 
+## Installation
+ThreebodyProblem.jl is not on the General Registry yet, so you must use Git to clone it to your computer
+```shell
+git clone https://github.com/jared711/ThreeBodyProblem.jl.git
+```
+Then you can add it to your Julia package environment by running the following from a Julia REPL.
+```julia
+using Pkg
+Pkg.add("[local path]/ThreeBodyProblem.jl")
+```
+
 ## Examples
 Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example)
 

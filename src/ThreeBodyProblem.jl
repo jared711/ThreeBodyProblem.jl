@@ -1,5 +1,7 @@
 module ThreeBodyProblem
 
+include("constants.jl")
+
 include("conversions.jl")
 export rot2inert
 

@@ -10,6 +10,7 @@ makedocs(
     pages = [
         "Introduction" => "index.md"
         "Functions" => [
+             "constants.md",
              "orbitalelements.md",
              "util.md",
              "dynamics.md",
