@@ -6,7 +6,7 @@ using Plots
 μ₂ = 4902   # {km³/s²} gravitational parameter of the Moon
 d = 384400  # {km} average distance between Earth and the Moon
 
-p = [μ₁, μ₂, d];
+p = [μ₁, μ₂, d]
 
 Lpts = findLpts(p)
 L4 = Lpts[4]

@@ -13,7 +13,7 @@ L4 = Lpts[4]
 L1 = findL1(p)
 
 R₁,R₂ = findR1R2(p)
-ωₛ = sqrt((μ₁ + μ₂)/d^3);
+ωₛ = sqrt((μ₁ + μ₂)/d^3)
 
 N = 100
 X = range(0,1.2*d,length=N)

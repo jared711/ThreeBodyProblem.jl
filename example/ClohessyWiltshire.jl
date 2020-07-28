@@ -26,7 +26,7 @@ r₀ = [-R₁ - (Rₑ + 200)*cosd(ϕ); -(Rₑ + 200)*sind(ϕ); 0]
 v₀ = vᵢ*[sind(ϕ); -cosd(ϕ); 0];
 rv₀ = [r₀;v₀]
 
-tspan = [0,86400*3]; % 3 days
+tspan = [0.,6400*3] # 3 days
 
 prob = ODEProblem(CR3BPdynamics!,rv₀,tspan,p)
 sol = solve(prob,reltol=1e-6)
