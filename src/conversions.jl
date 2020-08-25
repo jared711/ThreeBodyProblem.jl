@@ -34,3 +34,11 @@ function S2I!(rv,t,p::Array)
     rv[1:6] = C*rv
     return nothing
 end
+
+function r2latlon(r::Array)
+    x,y,z = r
+    xy = sqrt(x^2 + y^2)
+    lat = atand(z,xy)
+    lon = atand(y,x)
+    return lat, lon
+end

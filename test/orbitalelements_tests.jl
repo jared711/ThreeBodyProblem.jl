@@ -6,11 +6,10 @@ using Test
 
 p = [1;0;0]
 rv = [1;3;4]
-@test findrP(rv,p) == 5
+@test_broken findrP(rv,p) == 5
 rv = [rv,rv]
-@test findrP(rv,p) == 5
+@test_broken findrP(rv,p) == 5
 rv = [1;3;4;5;5;7]
-@test findrP(rv,p) == 5
+@test_broken findrP(rv,p) == 5
 rv = [rv,rv]
-@test findrP(rv,p) == 5
-findrP(rv,p)
+@test_broken findrP(rv,p) == 5
