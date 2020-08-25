@@ -4,7 +4,7 @@ using Documenter
 using ThreeBodyProblem
 
 makedocs(
-    sitename = "ThreeBodyProblem",
+    sitename = "ThreeBodyProblem.jl",
     # modules = [ThreeBodyProblem],
     format = Documenter.HTML(prettyurls = false),
     pages = [
@@ -12,6 +12,7 @@ makedocs(
         "Functions" => [
              "constants.md",
              "orbitalelements.md",
+             "parameters.md",
              "util.md",
              "dynamics.md",
              "example.md"
