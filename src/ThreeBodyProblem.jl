@@ -3,20 +3,6 @@ module ThreeBodyProblem
 include("constants.jl")
 export JD, JY, AU, G
 
-include("conversions.jl")
-export  rot2inert
-
-include("dynamics.jl")
-export  R2BPdynamics!,
-        CR3BPdynamics!,
-        CR3BPinert!,
-        CWdynamics!
-
-include("orbitalelements.jl")
-export  AP2a,
-        findrP
-
-
 include("parameters.jl")
 export  System,
         Body,
@@ -35,6 +21,25 @@ export  System,
         sun_neptune,
         jupiter_europa,
         saturn_enceladus
+
+include("conversions.jl")
+export  rot2inert
+
+include("dynamics.jl")
+export  R2BPdynamics!,
+        R2BPdynamics,
+        CR3BPdynamics!,
+        CR3BPdynamics,
+        CR3BPinert!,
+        CR3BPinert,
+        CWdynamics!,
+        CWdynamics
+
+include("orbitalelements.jl")
+export  AP2a,
+        findrP
+
+
 
 include("util.jl")
 export  findR1R2,
