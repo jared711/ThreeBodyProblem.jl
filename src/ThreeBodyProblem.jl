@@ -49,9 +49,7 @@ export  findR1R2,
         findC
 
 include("plot.jl")
-# export plot_sphere,
-#         plot_earth,
-#         plot_circle,
-#         plot_rv
+export  circle,
+        sphere
 
 end # module

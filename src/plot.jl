@@ -1,10 +1,21 @@
 using RecipesBase
 
-function plot_circle(r=1,c=[0,0,0];color="blue",label="",npts=100)
+function circle(r=1,c=[0,0,0];color="blue",label="",npts=100)
     u = range(0,stop=2π,length=npts)
     x = r*cos.(u) .+ c[1]
     y = r*sin.(u) .+ c[2]
     return x,y
+end
+
+function sphere(r=1,c=[0,0,0],col='b',n=100)
+    θ = range(0,stop=2π,length=n)
+    ψ = range(0,stop=π,length=n)
+    x = r*cos.(θ) * sin.(ψ)';
+    y = r*sin.(θ) * sin.(ψ)';
+    z = r*ones(n) * cos.(ψ)';
+    # const_color = cgrad( [ RGB{Float64}(0.,0.,1.) for _ in 1:2 ] )
+    # s = surface!(r*x,r*y,r*z,colorbar=false,color=const_color,width=1)
+    return x,y,z
 end
 
 @recipe function f(sys::System)
@@ -24,25 +35,15 @@ end
 
     @series begin
         label := name1
-        x,y = plot_circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+        x,y = circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
     end
 
     @series begin
         label := name2
-        x,y = plot_circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0], label="Secondary")
+        x,y = circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0], label="Secondary")
     end
 end
 
-# function plot_sphere(r=1,c=[0,0,0],col='b',n=100)
-#     u = range(0,stop=2π,length=n)
-#     v = range(0,stop=π,length=n)
-#     x = cos.(u) * sin.(v)';
-#     y = sin.(u) * sin.(v)';
-#     z = ones(n) * cos.(v)';
-#     const_color = cgrad( [ RGB{Float64}(0.,0.,1.) for _ in 1:2 ] )
-#     s = surface!(r*x,r*y,r*z,colorbar=false,color=const_color,width=1)
-#     return s
-# end
 #
 # function plot_earth(;CR3BP=true,col='b',n=100)
 #     CR3BP ? r = earth.r/moon.a      : r = earth.r

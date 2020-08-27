@@ -19,6 +19,10 @@ end
     include("parameters_tests.jl")
 end
 
+@safetestset "plot.jl tests" begin
+    include("plot_tests.jl")
+end
+
 @safetestset "util.jl tests" begin
     include("util_tests.jl")
 end

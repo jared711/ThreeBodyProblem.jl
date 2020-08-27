@@ -45,12 +45,22 @@ PRIM, SEC, SYS = sun_mercury()
 @test SYS.name == "Sun/Mercury"
 
 PRIM, SEC, SYS = sun_venus()
+@test SYS.name == "Sun/Venus"
 PRIM, SEC, SYS = sun_earth()
+@test SYS.name == "Sun/Earth"
 PRIM, SEC, SYS = earth_moon()
+@test SYS.name == "Earth/Moon"
 PRIM, SEC, SYS = sun_mars()
+@test SYS.name == "Sun/Mars"
 PRIM, SEC, SYS = sun_jupiter()
+@test SYS.name == "Sun/Jupiter"
 PRIM, SEC, SYS = jupiter_europa()
+@test SYS.name == "Jupiter/Europa"
 PRIM, SEC, SYS = sun_saturn()
+@test SYS.name == "Sun/Saturn"
 PRIM, SEC, SYS = saturn_enceladus()
+@test SYS.name == "Saturn/Enceladus"
 PRIM, SEC, SYS = sun_uranus()
+@test SYS.name == "Sun/Uranus"
 PRIM, SEC, SYS = sun_neptune()
+@test SYS.name == "Sun/Neptune"
