@@ -38,3 +38,19 @@ PRIM, SEC, SYS = set_system(newplanet, newmoon)
 @test typeof(PRIM) == Body
 @test typeof(SEC) == Body
 @test typeof(SYS) == System
+
+PRIM, SEC, SYS = sun_mercury()
+@test PRIM.name == "Sun"
+@test SEC.name == "Mercury"
+@test SYS.name == "Sun/Mercury"
+
+PRIM, SEC, SYS = sun_venus()
+PRIM, SEC, SYS = sun_earth()
+PRIM, SEC, SYS = earth_moon()
+PRIM, SEC, SYS = sun_mars()
+PRIM, SEC, SYS = sun_jupiter()
+PRIM, SEC, SYS = jupiter_europa()
+PRIM, SEC, SYS = sun_saturn()
+PRIM, SEC, SYS = saturn_enceladus()
+PRIM, SEC, SYS = sun_uranus()
+PRIM, SEC, SYS = sun_neptune()
