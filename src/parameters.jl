@@ -6,9 +6,10 @@
 struct Body
     m::Float64      # mass {kg}
     R::Float64      # mean radius {km}
-    a::Float64      # mean semimajor axis about central body {km}
+    a::Float64      # mean semimajor axis about parent body {km}
     T::Float64      # sidereal orbital period {s}
     name::String    # name of body (e.g. "Earth")
+    # parent::Body    # parent body (e.g. SUN for EARTH)
 end
 
 """
@@ -30,7 +31,6 @@ struct System
     name::String    # name of system (e.g. "Earth/Moon")
 end
 System(prim::Body, sec::Body) = System(prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), sec.a, prim.R, sec.R, sec.T, sec.a, sec.T/2π, sec.a*2π/sec.T,string(prim.name,"/",sec.name))
-
 
 ### Setting Parameters for Various Bodies and Systems
 # Values from wikipedia

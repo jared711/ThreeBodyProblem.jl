@@ -20,5 +20,18 @@ Pkg.add("[local path]/ThreeBodyProblem.jl")
 ## Examples
 Examples are found [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example)
 
+## Jupyter Notebooks
+To run Jupyter notebooks, you need to have the IJulia package downloaded.
+```julia
+using Pkg
+Pkg.add("IJulia")
+```
+Then run
+```julia
+using IJulia
+notebook(dir=".",detached=true)
+```
+If you want to work in a different directory than your current working dire
+
 ## Documentation
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl)

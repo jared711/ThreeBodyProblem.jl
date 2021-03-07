@@ -32,8 +32,7 @@ end
 Compute change of state vector in normalized CR3BP. rv is the normalized state
 {NON} and μ is the gravitational parameter {NON}.
 """
-function CR3BPdynamics(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Moon System
-    μ = sys.μ
+function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
     r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass
@@ -44,14 +43,17 @@ function CR3BPdynamics(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Moo
     return rvdot
 end
 
+function CR3BPdynamics(rv,sys::System,t) #Three body dynamics in Earth/Moon System
+    return CR3BPdynamics(rv,sys.μ,t)
+end
+
 """
     CR3BPdynamics!(rvdot,rv,μ,t)
 
 Compute change of state vector in normalized CR3BP. rv is the normalized state
 {NON} and μ is the gravitational parameter {NON}.
 """
-function CR3BPdynamics!(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Moon System
-    μ = sys.μ
+function CR3BPdynamics!(rvdot,rv,μ,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
     r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass
@@ -62,15 +64,20 @@ function CR3BPdynamics!(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Mo
     return nothing
 end
 
+function CR3BPdynamics!(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Moon System
+    CR3BPdynamics!(rvdot,rv,sys.μ,t)
+    return nothing
+end
+
 """
-    CR3BPdynamics(rvdot,rv,p::Array,t)
+    CR3BPdynamics(rv,p::Array,t)
 
 Compute change of state vector in non-normalized restricted three-body system.
 rv is the state [r; v] {km; km/s} and p = [μ₁;μ₂;d] {km³/s²; km³/s²; km}
 contains the gravitational parameters of the first and second primary bodies and
 the distance between them.
 """
-function CR3BPdynamics(rvdot,rv,p::Array,t) #Three body dynamics in Earth/Moon System
+function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
     R₁ = d*μ₂/(μ₁+μ₂)
@@ -104,6 +111,53 @@ function CR3BPdynamics!(rvdot,rv,p::Array,t) #Three body dynamics in Earth/Moon 
     rvdot[4]   = -(μ₁*(x+R₁)/r₁³) - (μ₂*(x-R₂)/r₂³) + 2*ωₛ*vy + ωₛ^2*x;
     rvdot[5]   = -(μ₁*y     /r₁³) - (μ₂*y     /r₂³) - 2*ωₛ*vx + ωₛ^2*y;
     rvdot[6]   = -(μ₁*z     /r₁³) - (μ₂*z     /r₂³);
+    return nothing
+end
+
+"""
+    CR3BPstm!(wdot,w,μ,t)
+
+Compute change of state vector in normalized CR3BP. w is the concatenation of rv, the
+normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
+is the gravitational parameter {NON}.
+"""
+function CR3BPstm!(wdot,w,μ,t) #Three body dynamics in Earth/Moon System
+    Φ = reshape(w[1:36],6,6)
+    rv = w[37:42]
+    x,y,z,vx,vy,vz = rv
+
+    r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
+    r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5; # distance to m2, smaller mass
+    r₁⁵= ((x + μ)^2     + y^2 + z^2)^2.5; # distance to m1, LARGER MASS
+    r₂⁵= ((x - 1 + μ)^2 + y^2 + z^2)^2.5; # distance to m2, smaller mass
+
+    omgxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵);
+    omgxy = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵;
+    omgxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵;
+    omgyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵);
+    omgyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵;
+    omgzz = - (1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵);
+
+
+    F = [   0     0     0     1     0	 0 ;
+            0     0     0     0 	1 	 0 ;
+            0	  0     0     0     0    1 ;
+        omgxx omgxy omgxz     0     2 	 0 ;
+        omgxy omgyy omgyz    -2     0 	 0 ;
+        omgxz omgyz omgzz     0	    0	 0 ];
+
+
+    mu1 = mu2;
+    X = rv;
+    Φdot = F*Φ;
+    wdot[1:36] = reshape(Φdot, 36, 1);
+    rvdot = CR3BPdynamics(rv,μ,t)
+    wdot[37:42] = rvdot
+    return nothing
+end
+
+function CR3BPstm!(wdot,w,sys::System,t) #Three body dynamics in Earth/Moon System
+    CR3BPstm!(wdot,w,sys.μ,t)
     return nothing
 end
 

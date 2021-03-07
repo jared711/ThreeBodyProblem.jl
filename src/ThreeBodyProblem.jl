@@ -6,9 +6,6 @@ export JD, JY, AU, G
 include("parameters.jl")
 export  System,
         Body,
-        PRIM,
-        SEC,
-        SYS,
         set_system,
         sun_mercury,
         sun_venus,
@@ -23,7 +20,8 @@ export  System,
         saturn_enceladus
 
 include("conversions.jl")
-export  rot2inert
+export  rot2inert!,
+        r2latlon
 
 include("dynamics.jl")
 export  R2BPdynamics!,
@@ -42,19 +40,22 @@ export  AP2a,
 
 
 include("util.jl")
-export  findR1R2,
-        findr1r2,
-        findL1,
-        findL2,
-        findL3,
-        findL4,
-        findL5,
-        findLpts,
-        findUeff,
-        findC
+export  computeR1R2,
+        computer1r2,
+        computeL1,
+        computeL2,
+        computeL3,
+        computeL4,
+        computeL5,
+        computeLpts,
+        computeUeff,
+        computeC
 
 include("plot.jl")
 export  circle,
         sphere
+
+include("special.jl")
+export  invariantManifolds
 
 end # module
