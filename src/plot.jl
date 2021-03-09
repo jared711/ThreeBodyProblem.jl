@@ -18,15 +18,20 @@ function sphere(r=1,c=[0,0,0],col='b',n=100)
     return x,y,z
 end
 
-@recipe function f(sys::System)
+@recipe function f(sys::System; scaled::Bool=false)
     name1, name2 = split(sys.name, '/')
-    L1,L2,L3,L4,L5 = findLpts(sys.μ)
+    color1 = sys.PRIM.color
+    color2 = sys.SEC.color
+    L1,L2,L3,L4,L5 = computeLpts(sys.μ)
 
     legend := true
+    legend := :topleft
+    aspect_ratio --> :equal
 
     @series begin
         markershape --> :x
         seriestype --> :scatter
+        markercolor --> :black
         label := "Lagrange Points"
         x = [L1[1], L2[1], L3[1], L4[1], L5[1]]
         y = [L1[2], L2[2], L3[2], L4[2], L5[2]]
@@ -35,12 +40,26 @@ end
 
     @series begin
         label := name1
-        x,y = circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+        seriescolor := color1
+        seriestype --> :shape
+        fillalpha --> 0.5
+        if scaled
+            x,y = circle(0.1, [-sys.μ,0,0])
+        else
+            x,y = circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+        end
     end
 
     @series begin
         label := name2
-        x,y = circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0], label="Secondary")
+        seriescolor := color2
+        seriestype --> :shape
+        fillalpha --> 0.5
+        if scaled
+            x,y = circle(0.025, [1-sys.μ,0,0])
+        else
+            x,y = circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0])
+        end
     end
 end
 
