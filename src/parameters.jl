@@ -14,13 +14,13 @@ struct Body
 end
 
 """
-    System
+    System(prim)
 
 A Circular Restricted Three-Body Problem System
 """
 struct System
-    PRIM::Body      # Primary body
-    SEC::Body       # Secondary body
+    prim::Body      # Primary body
+    sec::Body       # Secondary body
     μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
     μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
     μ::Float64      # {} mass parameter
@@ -92,6 +92,9 @@ HYDRA       = Body(3.663917107480563E-03/G, 30.5,       48671.,         38.20*JD
 KERBEROS    = Body(4.540734312735987E-04/G, 14.0,       64698.,         32.17*JD,       "Kerberos", :grey)
 STYX        = Body(2.000000000000000E-20/G, 10.0,       57729.,         20.16*JD,       "Styx",     :grey)
 
+"""
+
+"""
 function set_system(primary::Body, secondary::Body)
     PRIM = primary
     SEC = secondary
