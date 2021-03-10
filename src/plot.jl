@@ -18,7 +18,7 @@ function sphere(r=1,c=[0,0,0],col='b',n=100)
     return x,y,z
 end
 
-@recipe function f(sys::System; scaled::Bool=false)
+@recipe function f(sys::System; scaled=false)
     name1, name2 = split(sys.name, '/')
     color1 = sys.PRIM.color
     color2 = sys.SEC.color

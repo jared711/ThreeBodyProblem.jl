@@ -41,3 +41,27 @@ function r2latlon(r::Array)
     lon = atand(y,x)
     return lat, lon
 end
+# y   r
+# |  /
+# | /  lon
+# |/------- x
+
+"""
+"""
+function ECEF2ECI(rv_ECEF, gmst)
+end
+
+"""
+"""
+function ECI2ECEF(rv_ECI, gmst)
+end
+
+"""
+"""
+function ECI2SCI(rv_ECI, rv_sun_ECI)
+end
+
+"""
+"""
+function SCI2ECI(rv_SCI, rv_earth_SCI)
+end

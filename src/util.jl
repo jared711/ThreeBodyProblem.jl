@@ -291,7 +291,24 @@ function computeC(rv,sys::System)
 end
 
 """
-    stability_index(Φ)
+    computeT(rv,sys::System) UNFINISHED (I don't like this name, "tisserand" is better)
+
+Compute Tisserand parameter given orbital elements
+"""
+function computeT(a,e,i; aⱼ=7.783561990635208e8, ang_unit::Symbol=:deg)
+    if ang_unit == :deg
+    elseif ang_unit == :rad
+        i = rad2deg(i)
+    else
+        error("ang_unit should be :rad or :deg")
+    end
+    
+    T = aⱼ/a + s*sqrt(a/aⱼ*(1 - e^2)*cosd(i))
+    return T
+end
+
+"""
+    stability_index(Φ) UNFINISHED
 
 Compute the stability index for a trajectory given its state transition matrix Φ
 """
