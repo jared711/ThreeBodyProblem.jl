@@ -19,9 +19,15 @@ export  System,
         jupiter_europa,
         saturn_enceladus
 
-include("conversions.jl")
+include("frames.jl")
 export  rot2inert!,
-        r2latlon
+        r2latlon,
+        enu2ecef,
+        ecef2enu,
+        ecef2eci,
+        eci2ecef,
+        eci2sci,
+        sci2eci
 
 include("dynamics.jl")
 export  R2BPdynamics!,
@@ -35,7 +41,14 @@ export  R2BPdynamics!,
 
 include("orbitalelements.jl")
 export  AP2a,
-        findrP
+        cart2oe,
+        oe2cart,
+        nu2E,
+        E2nu,
+        E2M,
+        M2E,
+        azel2cart,
+        cart2azel
 
 
 
@@ -49,13 +62,29 @@ export  computeR1R2,
         computeL5,
         computeLpts,
         computeUeff,
-        computeC
+        computeC,
+        rotx,
+        rotxd,
+        roty,
+        rotyd,
+        rotz,
+        rotzd,
+        rotlatlon,
+        date2mjd,
+        mjd2gmst,
+        wrapto360,
+        wrapto180,
+        wrapto2pi,
+        wraptopi,
+        date2str
+
 
 include("plot.jl")
 export  circle,
         sphere
 
 include("special.jl")
-export  invariantManifolds
+export  invariant_manifolds,
+        differential_corrector
 
 end # module

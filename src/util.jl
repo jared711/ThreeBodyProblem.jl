@@ -302,7 +302,7 @@ function computeT(a,e,i; aⱼ=7.783561990635208e8, ang_unit::Symbol=:deg)
     else
         error("ang_unit should be :rad or :deg")
     end
-    
+
     T = aⱼ/a + s*sqrt(a/aⱼ*(1 - e^2)*cosd(i))
     return T
 end
@@ -314,4 +314,201 @@ Compute the stability index for a trajectory given its state transition matrix �
 """
 function stability_index(Φ)
     return Φ
+end
+
+"""
+    rotx(θ)
+"""
+function rotx(θ)
+    R = [1      0       0;
+         0 cos(θ) -sin(θ);
+         0 sin(θ)  cos(θ)]
+    return R
+end
+
+"""
+    rotxd(θ)
+"""
+function rotxd(θ)
+    R = [1      0       0;
+         0 cosd(θ) -sind(θ);
+         0 sind(θ)  cosd(θ)]
+    return R
+end
+
+"""
+    roty(θ)
+"""
+function roty(θ)
+    R = [cos(θ)  0  sin(θ);
+              0  1       0;
+        -sin(θ)  0  cos(θ)]
+    return R
+end
+
+"""
+    rotyd(θ)
+"""
+function rotyd(θ)
+    R = [cosd(θ)  0  sind(θ);
+               0  1        0;
+        -sind(θ)  0  cosd(θ)]
+    return R
+end
+
+"""
+    rotz(θ)
+"""
+function rotz(θ)
+    R = [cos(θ) -sin(θ) 0;
+         sin(θ)  cos(θ) 0;
+              0       0 1]
+    return R
+end
+
+"""
+    rotzd(θ)
+"""
+function rotzd(θ)
+    R = [cosd(θ) -sind(θ) 0;
+         sind(θ)  cosd(θ) 0;
+               0        0 1]
+    return R
+end
+
+"""
+    rotlatlon(ϕ, λ; ang_unit=:deg)
+"""
+function rotlatlon(ϕ, λ; ang_unit=:deg)
+    if ang_unit == :rad
+        Φ = rotx(π/2 - ϕ)
+        Λ = rotz(π/2 + λ)
+    elseif ang_unit == :deg
+        Φ = rotxd(90 - ϕ)
+        Λ = rotzd(90 + λ)
+    else
+        error("ang_unit should be :deg or :rad")
+    end
+    R = Λ*Φ
+    return R
+end
+
+"""
+    date2mjd(ut1_date)
+"""
+function date2mjd(ut1_date)
+    if size(ut1_date) == (3,)
+        Y = ut1_date[1]
+        M = ut1_date[2]
+        D = ut1_date[3]
+    elseif size(ut1_date) == (6,)
+        Y = ut1_date[1]
+        M = ut1_date[2]
+        D = ut1_date[3] + ut1_date[4]/24 + ut1_date[5]/24/60 + ut1_date[6]/24/60/60
+    else
+        error("ut1_date should be [Y,M,D] or [Y,M,D,h,m,s]")
+    end
+
+    if M <= 2
+        y = Y-1;
+        m = M+12;
+    else
+        y = Y;
+        m = M;
+    end
+
+    if Y < 1582
+        B = -2 + ((y+4716/4)/4) - 1179;
+    elseif Y > 1582
+        B = y/400 - y/100 + y/4;
+    else
+        if M < 10
+            B = -2 + ((y+4716/4)/4) - 1179;
+        elseif M > 10
+            B = y/400 - y/100 + y/4;
+        else
+            if D <= 4
+                B = -2 + ((y+4716/4)/4) - 1179;
+            elseif D >= 10
+                B = y/400 - y/100 + y/4;
+            else
+                B = NaN;
+            end
+        end
+    end
+
+    ut1_mjd = 365*y - 679004 + floor(B) + floor(30.6001*(m+1)) + D;
+
+end
+
+
+"""
+    mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
+"""
+function mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
+    θ₀ = 280.4606 # [deg] Greenwich Mean Sidereal time at J2000 Epoch
+    ωₑ = 360.9856473 # [deg/day] rotating rate of the Earth
+    d = ut1_mjd - 51544.5 # Normalize by epoch (Jan. 1, 2000 12:00h)
+
+    if ang_unit == :rad
+        θ₀ = deg2rad(θ₀)
+        ωₑ = deg2rad(ωₑ)
+        θ = θ₀ + ωₑ*d
+        θ = wrapto2pi(θ)
+    elseif ang_unit == :deg
+        θ = θ₀ + ωₑ*d
+        θ = wrapto360(θ)
+    else
+        error("ang_unit should be :deg or :rad")
+    end
+    return θ
+end
+
+"""
+    wrapto360(θ)
+"""
+function wrapto360(θ)
+    while θ < 0;    θ += 360;   end
+    while θ > 360;  θ -= 360;   end
+    return θ
+end
+
+"""
+    wrapto180(θ)
+"""
+function wrapto180(θ)
+    while θ < 180;  θ += 360;   end
+    while θ > -180; θ -= 360;   end
+    return θ
+end
+
+"""
+    wrapto2pi(θ)
+"""
+function wrapto2pi(θ)
+    while θ < 0;    θ += 2π;    end
+    while θ > 2π;   θ -= 2π;    end
+    return θ
+end
+
+"""
+    wraptopi(θ)
+"""
+function wraptopi(θ)
+    while θ < -π;   θ += 2π;    end
+    while θ > π;    θ -= 2π;    end
+    return θ
+end
+
+"""
+    date2str(date)
+"""
+function date2str(date)
+    Y = Int(date[1])
+    M = Int(date[2])
+    D = Int(date[3])
+    h = Int(date[4])
+    m = Int(date[5])
+    s = date[6]
+    return string(Y, "-", M, "-", D, " ", h, ":", m, ":", s)
 end

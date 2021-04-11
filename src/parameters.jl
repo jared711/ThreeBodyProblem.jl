@@ -12,6 +12,8 @@ struct Body
     color::Symbol   # color of the body for plotting
     # parent::Body    # parent body (e.g. SUN for EARTH)
 end
+Body(m::Float64, R::Float64, a::Float64, T::Float64, name::String) = Body(m, R, a, T, name, :blue)
+Body(m::Float64, R::Float64, a::Float64, T::Float64) = Body(m, R, a, T, "NewPlanet", :blue)
 
 """
     System(prim)

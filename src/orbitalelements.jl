@@ -5,13 +5,13 @@ using LinearAlgebra
 
 Compute the semimajor axis given apoapsis and periapsis distances rA and rP.
 """
-function AP2a(rA, rP)
-    a = (rA + rP)/2
+function AP2a(Q, q)
+    a = (Q + q)/2
 end
 
 """
-    findrP(rv::Array,p::Array)
-    I should probably change this to compute instead of find
+    computeq(rv::Array,p::Array)
+computeq
 """
 function findrP(rv::Array, p::Array=[0,0,0])
     if size(rv[1]) == (6,) || size(rv[1]) == (3,)
@@ -56,20 +56,20 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
     e = norm(e_ECI)     # [] eccentricity
 
     # size of orbit
-    ϵ = 0.5*v^2 - μ/r   # [km²/s²] specific mechanical energy
+    ℰ = 0.5*v^2 - μ/r   # [km²/s²] specific mechanical energy
 
     if e == 1
         a = Inf         # [km] semimajor axis
         p = h^2/μ       # [km] semilatus rectum
     else
-        a = -μ/(2*ϵ)    # [km] semimajor axis
+        a = -μ/(2*ℰ)    # [km] semimajor axis
         p = a*(1 - e^2) # [km] semilatus rectum
     end
 
     # orientation of orbit
     i = acosd(h_ECI[3]/h)           # [deg] inclination
     Ω = acosd(n_ECI[1]/n)           # [deg] right ascension of the ascending node
-    ω = acosd((n_ECI'*e_ECI)/(e*r)) # [deg] argument of periapsis
+    ω = acosd((n_ECI'*e_ECI)/(e*n)) # [deg] argument of periapsis
     ν = acosd((e_ECI'*r_ECI)/(e*r)) # [deg] true anomaly
 
     # put angles in correct domain
@@ -103,7 +103,7 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
         error("ang_unit should be :rad or :deg")
     end
 
-    return a, e, i, Ω, ω, ν, Π, u, l, ϵ
+    return a, e, i, Ω, ω, ν, Π, u, l, ℰ
 end
 
 """
@@ -135,10 +135,12 @@ function oe2cart(a,e,i,Ω,ω,ν,μ; ang_unit::Symbol=:deg)
     r = p/(1 + e*cosd(ν))   # [km] magnitude of r_ECI
     r_PQW = [r*cosd(ν), r*sind(ν), 0];
     v_PQW = sqrt(μ/p)*[-sind(ν), e + cosd(ν), 0];
+    rv_PQW = [r_PQW; v_PQW]
 
-    r_ECI = rotz(Ω)*rotx(i)*rotz(ω)*r_PQW;
-    v_ECI = rotz(Ω)*rotx(i)*rotz(ω)*v_PQW;
-    return r_ECI, v_ECI, r_PQW, v_PQW
+    r_ECI = rotzd(Ω)*rotxd(i)*rotzd(ω)*r_PQW;
+    v_ECI = rotzd(Ω)*rotxd(i)*rotzd(ω)*v_PQW;
+    rv_ECI = [r_ECI; v_ECI]
+    return rv_ECI
 end
 
 """
@@ -248,7 +250,7 @@ See also: [`E2M`](@ref)
 
 # Examples
 ```jldoctest
-julia> M2E(180, 0.5 ang_unit=:deg, tol=1e-10)
+julia> M2E(180, 0.5, ang_unit=:deg, tol=1e-10)
 180
 ```
 """

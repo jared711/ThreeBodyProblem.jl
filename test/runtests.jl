@@ -1,7 +1,7 @@
 using SafeTestsets
 
 using Test, Documenter, ThreeBodyProblem
-doctest(ThreeBodyProblem)
+# doctest(ThreeBodyProblem)
 
 @safetestset "conversions.jl tests" begin
     include("conversions_tests.jl")
