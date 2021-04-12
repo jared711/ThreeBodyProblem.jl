@@ -1,7 +1,7 @@
 using SPICE
 pwd()
-furnsh("src/kernels/de440s.bsp")
-furnsh("src/kernels/naif0012.tls")
+furnsh("kernels/de440s.bsp")
+furnsh("kernels/naif0012.tls")
 
 """
     rot2inert!(rv,θ)
