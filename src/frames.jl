@@ -1,5 +1,4 @@
 using SPICE
-pwd()
 furnsh("src/kernels/de440s.bsp")
 furnsh("src/kernels/naif0012.tls")
 

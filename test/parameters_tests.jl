@@ -1,10 +1,10 @@
 using ThreeBodyProblem
 using Test
 
-PRIM, SEC, SYS = set_system(ThreeBodyProblem.JUPITER,ThreeBodyProblem.CALLISTO)
-@test typeof(PRIM) == Body
-@test typeof(SEC) == Body
-@test typeof(SYS) == System
+sys = System(ThreeBodyProblem.JUPITER,ThreeBodyProblem.CALLISTO)
+@test typeof(sys.prim) == Body
+@test typeof(sys.sec) == Body
+@test typeof(sys) == System
 
 # Create the ice planet Hoth
 m = 1e24 # {kg} mass
@@ -34,33 +34,33 @@ newmoon = Body(m, R, a, T, name)
 @test newmoon.T == T
 @test newmoon.name == name
 
-PRIM, SEC, SYS = set_system(newplanet, newmoon)
-@test typeof(PRIM) == Body
-@test typeof(SEC) == Body
-@test typeof(SYS) == System
+sys = System(newplanet, newmoon)
+@test typeof(sys.prim) == Body
+@test typeof(sys.sec) == Body
+@test typeof(sys) == System
 
-PRIM, SEC, SYS = sun_mercury()
-@test PRIM.name == "Sun"
-@test SEC.name == "Mercury"
-@test SYS.name == "Sun/Mercury"
+sys = sun_mercury()
+@test sys.prim.name == "Sun"
+@test sys.sec.name == "Mercury"
+@test sys.name == "Sun/Mercury"
 
-PRIM, SEC, SYS = sun_venus()
-@test SYS.name == "Sun/Venus"
-PRIM, SEC, SYS = sun_earth()
-@test SYS.name == "Sun/Earth"
-PRIM, SEC, SYS = earth_moon()
-@test SYS.name == "Earth/Moon"
-PRIM, SEC, SYS = sun_mars()
-@test SYS.name == "Sun/Mars"
-PRIM, SEC, SYS = sun_jupiter()
-@test SYS.name == "Sun/Jupiter"
-PRIM, SEC, SYS = jupiter_europa()
-@test SYS.name == "Jupiter/Europa"
-PRIM, SEC, SYS = sun_saturn()
-@test SYS.name == "Sun/Saturn"
-PRIM, SEC, SYS = saturn_enceladus()
-@test SYS.name == "Saturn/Enceladus"
-PRIM, SEC, SYS = sun_uranus()
-@test SYS.name == "Sun/Uranus"
-PRIM, SEC, SYS = sun_neptune()
-@test SYS.name == "Sun/Neptune"
+sys = sun_venus()
+@test sys.name == "Sun/Venus"
+sys = sun_earth()
+@test sys.name == "Sun/Earth"
+sys = earth_moon()
+@test sys.name == "Earth/Moon"
+sys = sun_mars()
+@test sys.name == "Sun/Mars"
+sys = sun_jupiter()
+@test sys.name == "Sun/Jupiter"
+sys = jupiter_europa()
+@test sys.name == "Jupiter/Europa"
+sys = sun_saturn()
+@test sys.name == "Sun/Saturn"
+sys = saturn_enceladus()
+@test sys.name == "Saturn/Enceladus"
+sys = sun_uranus()
+@test sys.name == "Sun/Uranus"
+sys = sun_neptune()
+@test sys.name == "Sun/Neptune"
