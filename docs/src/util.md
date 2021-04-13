@@ -8,14 +8,14 @@ The utility functions are all those functions that didn't fit into the other est
 ## Functions
 
 ```@docs
-findR1R2
-findr1r2
-findL1
-findL2
-findL3
-findL4
-findL5
-findLpts
-findUeff
-findC
+computeR1R2
+computer1r2
+computeL1
+computeL2
+computeL3
+computeL4
+computeL5
+computeLpts
+computeUeff
+computeC
 ```

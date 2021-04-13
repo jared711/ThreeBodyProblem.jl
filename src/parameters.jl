@@ -1,7 +1,17 @@
 # import ThreeBodyProblem.Constants
 # include("constants.jl")
 """
-    Body
+    Body(m, R, a, T, name, color)
+    Body(m, R, a, T, name)
+    Body(m, R, a, T)
+
+A planet, moon, or other gravitationally significant object
+m::Float64      # mass {kg}
+R::Float64      # mean radius {km}
+a::Float64      # mean semimajor axis about parent body {km}
+T::Float64      # sidereal orbital period {s}
+name::String    # name of body (e.g. "Earth")
+color::Symbol   # color of the body for plotting
 """
 struct Body
     m::Float64      # mass {kg}
@@ -16,9 +26,23 @@ Body(m::Float64, R::Float64, a::Float64, T::Float64, name::String) = Body(m, R, 
 Body(m::Float64, R::Float64, a::Float64, T::Float64) = Body(m, R, a, T, "NewPlanet", :blue)
 
 """
-    System(prim)
+    System(prim, sec, μ₁, μ₂, μ, d, R₁, R₂, T, RUNIT, VUNIT, TUNIT, name)
+    System(prim::Body, sec::Body)
 
-A Circular Restricted Three-Body Problem System
+A Circular Restricted Three-Body Problem System defined by primary and secondary bodies (prim and sec)
+prim::Body      # Primary body
+sec::Body       # Secondary body
+μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
+μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
+μ::Float64      # {} mass parameter
+d::Float64      # {km} average distance between two primaries
+R₁::Float64     # {km} Radius of primary Body
+R₂::Float64     # {km} Radius of Secondary Body
+T::Float64      # {s} sidereal orbital period
+RUNIT::Float64  # {km} distance normalizing parameter
+VUNIT::Float64  # {km/s} velocity normalizing parameter
+TUNIT::Float64  # {s} time normalizing parameter
+name::String    # name of system (e.g. "Earth/Moon")
 """
 struct System
     prim::Body      # Primary body
@@ -94,27 +118,51 @@ HYDRA       = Body(3.663917107480563E-03/G, 30.5,       48671.,         38.20*JD
 KERBEROS    = Body(4.540734312735987E-04/G, 14.0,       64698.,         32.17*JD,       "Kerberos", :grey)
 STYX        = Body(2.000000000000000E-20/G, 10.0,       57729.,         20.16*JD,       "Styx",     :grey)
 
-"""
 
 """
-function set_system(primary::Body, secondary::Body)
-    PRIM = primary
-    SEC = secondary
-    SYS = System(PRIM, SEC)
-    return PRIM, SEC, SYS
-end
-
-sun_mercury() = set_system(SUN, MERCURY)
-sun_venus() = set_system(SUN, VENUS)
-sun_earth() = set_system(SUN, EARTH)
-earth_moon() = set_system(EARTH, MOON)
-sun_mars() = set_system(SUN, MARS)
-sun_jupiter() = set_system(SUN, JUPITER)
-sun_saturn() = set_system(SUN, SATURN)
-sun_uranus() = set_system(SUN, URANUS)
-sun_neptune() = set_system(SUN, NEPTUNE)
-jupiter_europa() = set_system(JUPITER, EUROPA)
-saturn_enceladus() = set_system(SATURN, ENCELADUS)
+    sun_mercury()
+"""
+sun_mercury() = System(SUN, MERCURY)
+"""
+    sun_venus()
+"""
+sun_venus() = System(SUN, VENUS)
+"""
+    sun_earth()
+"""
+sun_earth() = System(SUN, EARTH)
+"""
+    earth_moon()
+"""
+earth_moon() = System(EARTH, MOON)
+"""
+    sun_mars()
+"""
+sun_mars() = System(SUN, MARS)
+"""
+    sun_jupiter()
+"""
+sun_jupiter() = System(SUN, JUPITER)
+"""
+    sun_saturn()
+"""
+sun_saturn() = System(SUN, SATURN)
+"""
+    sun_uranus()
+"""
+sun_uranus() = System(SUN, URANUS)
+"""
+    sun_neptune()
+"""
+sun_neptune() = System(SUN, NEPTUNE)
+"""
+    jupiter_europa()
+"""
+jupiter_europa() = System(JUPITER, EUROPA)
+"""
+    saturn_enceladus()
+"""
+saturn_enceladus() = System(SATURN, ENCELADUS)
 
 ## Extra values from ephemeris files
 # MARS        = Body(4.282837362069909E+04/G,

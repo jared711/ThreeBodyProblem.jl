@@ -55,7 +55,6 @@ rv is the state [r; v] {km; km/s} and p = [μ₁;μ₂;d] {km³/s²; km³/s²; k
 contains the gravitational parameters of the first and second primary bodies and
 the distance between them.
 """
-
 function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS

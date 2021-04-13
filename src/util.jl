@@ -1,5 +1,8 @@
 """
      computeR1R2(μ)
+
+Compute the non-dimensional distances of each body from the barycenter given the mass
+parameter, μ
 """
 function computeR1R2(μ::Number)
     R₁ = -μ
@@ -9,6 +12,10 @@ end
 
 """
     computeR1R2(p::Array)
+
+Compute the dimensional distances of each body from the barycenter p = [μ₁,μ₂,d], which are
+the gravitational parameters of the first and second primary bodies [km³/s²]and the distance
+between them [km].
 """
 function computeR1R2(p::Array)
     μ₁,μ₂,d = p
@@ -19,6 +26,9 @@ end
 
 """
     computer1r2(rv,μ)
+
+Compute the non-dimensional distances of each body from the barycenter given the mass
+parameter, μ
 """
 function computer1r2(rv,μ)
     x,y,z = rv[1:3]
@@ -28,7 +38,11 @@ function computer1r2(rv,μ)
 end
 
 """
-    computer1r2(rv,μ)
+    computer1r2(rv,p::Array)
+
+Compute the dimensional position vector of the object from each body given p = [μ₁,μ₂,d],
+which are the gravitational parameters of the first and second primary bodies [km³/s²]and
+the distance between them [km]
 """
 function computer1r2(rv,p::Array)
     x,y,z = rv[1:3]
@@ -42,7 +56,7 @@ end
 """
     computeL1(μ;tol=1e-15)
 
-Compute 3D L1 in a normalized CR3BP given μ, the system mass ratio.
+Compute position vector to L1 in a normalized CR3BP given the mass parameter, μ
 """
 function computeL1(μ;tol=1e-15)
     α = (μ/3 * (1 - μ))^(1/3)
@@ -76,7 +90,7 @@ end
 """
     computeL2(μ;tol=1e-15)
 
-Compute 3D L2 in a normalized CR3BP given μ, the system mass ratio.
+Compute 3D L2 in a normalized CR3BP given μ, the system mass parameter.
 """
 function computeL2(μ;tol=1e-15)
     β = (μ/3 * (1 - μ))^(1/3)
@@ -110,7 +124,7 @@ end
 """
     computeL3(μ;tol=1e-15)
 
-Compute 3D L3 in a normalized CR3BP given μ, the system mass ratio.
+Compute 3D L3 in a normalized CR3BP given μ, the system mass parameter.
 """
 function computeL3(μ;tol=1e-15)
     γ = -7*μ/12 + 1
@@ -144,7 +158,7 @@ end
 """
     computeL4(μ;tol=1e-15)
 
-ComputeL4 3D L4 in a normalized CR3BP given μ, the system mass ratio.
+ComputeL4 3D L4 in a normalized CR3BP given μ, the system mass parameter.
 """
 computeL4(μ;tol=1e-15) = [0.5-μ; √3/2; 0]
 
@@ -165,7 +179,7 @@ end
 """
     computeL5(μ;tol=1e-15)
 
-Compute 3D L5 in a normalized CR3BP given μ, the system mass ratio.
+Compute 3D L5 in a normalized CR3BP given μ, the system mass parameter.
 """
 computeL5(μ;tol=1e-15) = [0.5-μ; -√3/2; 0]
 
@@ -186,7 +200,7 @@ end
 """
     computeLpts(μ;tol=1e-15)
 
-Compute 3D Lagrange points in a normalized CR3BP given μ, the system mass ratio.
+Compute 3D Lagrange points in a normalized CR3BP given μ, the system mass parameter.
 """
 function computeLpts(μ; tol=1e-15)
     Lpts = [
@@ -227,7 +241,7 @@ end
 """
     computeUeff(rv,μ)
 
-Compute effective potential given normalized state rv {NON} and mass ratio {NON}
+Compute effective potential given normalized state rv {NON} and mass parameter {NON}
 """
 function computeUeff(rv,μ)
     x,y,z = rv[1:3]
@@ -256,7 +270,7 @@ end
 """
     computeC(rv,μ)
 
-Compute Jacobi constant given normalized state rv {NON} and mass ratio {NON}
+Compute Jacobi constant given normalized state rv {NON} and mass parameter {NON}
 """
 function computeC(rv,μ)
     v = norm(rv[4:6])

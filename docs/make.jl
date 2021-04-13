@@ -11,6 +11,7 @@ makedocs(
         "Introduction" => "index.md"
         "Functions" => [
              "constants.md",
+             "frames.md",
              "orbitalelements.md",
              "parameters.md",
              "util.md",

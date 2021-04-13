@@ -11,6 +11,10 @@ end
     include("dynamics_tests.jl")
 end
 
+@safetestset "frames.jl tests" begin
+    include("frames_tests.jl")
+end
+
 @safetestset "orbitalelements.jl tests" begin
     include("orbitalelements_tests.jl")
 end
