@@ -3,10 +3,6 @@ using SafeTestsets
 using Test, Documenter, ThreeBodyProblem
 # doctest(ThreeBodyProblem)
 
-@safetestset "conversions.jl tests" begin
-    include("conversions_tests.jl")
-end
-
 @safetestset "dynamics.jl tests" begin
     include("dynamics_tests.jl")
 end
