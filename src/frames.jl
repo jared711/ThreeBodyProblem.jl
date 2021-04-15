@@ -1,6 +1,6 @@
 using SPICE
-furnsh("src/kernels/de440s.bsp")
-furnsh("src/kernels/naif0012.tls")
+# furnsh("src/kernels/de440s.bsp")
+# furnsh("src/kernels/naif0012.tls")
 
 """
     rot2inert!(rv,θ)

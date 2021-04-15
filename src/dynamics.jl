@@ -145,9 +145,6 @@ function CR3BPstm!(wdot,w,μ,t) #Three body dynamics in Earth/Moon System
         omgxy omgyy omgyz    -2     0 	 0 ;
         omgxz omgyz omgzz     0	    0	 0 ];
 
-
-    mu1 = mu2;
-    X = rv;
     Φdot = F*Φ;
     wdot[1:36] = reshape(Φdot, 36, 1);
     rvdot = CR3BPdynamics(rv,μ,t)

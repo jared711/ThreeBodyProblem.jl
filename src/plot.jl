@@ -20,8 +20,8 @@ end
 
 @recipe function f(sys::System; scaled=false)
     name1, name2 = split(sys.name, '/')
-    color1 = sys.PRIM.color
-    color2 = sys.SEC.color
+    color1 = sys.prim.color
+    color2 = sys.sec.color
     L1,L2,L3,L4,L5 = computeLpts(sys.μ)
 
     legend := true

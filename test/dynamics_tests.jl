@@ -1,4 +1,5 @@
 using ThreeBodyProblem
+using LinearAlgebra
 using Test
 
 sys = earth_moon()
@@ -29,7 +30,7 @@ rvdot = zeros(6)
 @test rvdot == CR3BPinert(rv_dim, p, t)
 
 wdot = zeros(42)
-w = [reshape(I(6)); rv]
+w = [reshape(I(6),36,1); rv]
 @test CR3BPstm!(wdot, w, sys, t) == nothing
 
 rvdot = zeros(6)
