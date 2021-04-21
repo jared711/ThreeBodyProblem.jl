@@ -34,7 +34,7 @@ rv = [1,0,0,0,1,0]
 
 sys = earth_moon()
 Lpts = computeLpts(sys)
-rv = vcat(Lpts[:,1],zeros(3))
+rv = vcat(Lpts[1],zeros(3))
 C₁ = computeC(rv, sys)
 
 A = [-1. 0.  0.;
