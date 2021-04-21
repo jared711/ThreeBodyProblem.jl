@@ -491,8 +491,8 @@ end
     wrapto180(θ)
 """
 function wrapto180(θ)
-    while θ < 180;  θ += 360;   end
-    while θ > -180; θ -= 360;   end
+    while θ < -180;  θ += 360;   end
+    while θ > 180; θ -= 360;   end
     return θ
 end
 
@@ -525,4 +525,98 @@ function date2str(date)
     m = Int(date[5])
     s = date[6]
     return string(Y, "-", M, "-", D, " ", h, ":", m, ":", s)
+end
+
+"""
+    desernosphere(N_desired)
+
+    Adapted from Lucas Bury's code implementing the algorithm in Deserno, M. (2004) How to
+    Generate Equidistributed points on the Surface of a Sphere
+"""
+function deserno_sphere(N_desired)
+
+area = 4*pi/N_desired
+distance = sqrt(area)
+
+M_theta = round(pi/distance);
+
+d_theta = pi/M_theta
+
+d_phi = area/d_theta;
+
+N_new = 0;
+xs = zeros(0)
+ys = zeros(0)
+zs = zeros(0)
+for m in 0:(M_theta-1)
+
+    theta = pi*(m+0.5)/M_theta;
+    M_phi = round(2*pi*sin(theta)/d_phi); # not exact
+
+    for n in 0:(M_phi-1)
+        Phi = 2*pi*n/M_phi;
+
+        N_new = N_new + 1;
+
+        append!(xs, sin(theta)*cos(Phi))
+        append!(ys, sin(theta)*sin(Phi))
+        append!(zs, cos(theta))
+    end
+end
+
+xyz_Sphere = copy(transpose(hcat(xs, ys, zs)))
+
+return xyz_Sphere, N_new
+end
+
+function deserno_hemisphere(N_desired, newCenter)
+# -------------------------------------------------
+### Obtaining spherical point cloud
+# -------------------------------------------------
+xyz_Sphere, N_sphere = deserno_hemisphere(N_desired*2);
+
+# -------------------------------------------------
+### Grab the desired hemisphere
+# -------------------------------------------------
+### Indices points with a 'z' value >= 0
+indices = xyz_Sphere[3,:] .>= 0
+
+### Use logical indexing to grab all points with a 'z' >= 0
+xyz_hem = xyz_Sphere[:,indices]
+N_new = size(xyz_hem, 2)
+
+# -------------------------------------------------
+### If new center is in the -z axis, just flip the signs on the existing hemisphere
+# -------------------------------------------------
+### In getSphere, the pattern is centered around the 'z' axis
+oldCenter = [0, 0, 1]
+
+### Turn input vector to unit vector
+newCenter = newCenter ./ norm(newCenter)
+
+### In case the new center is in the opposite direction of the old center, can
+### save computational time with this (but also the other algorithm breaks)
+if newCenter == -oldCenter
+    xyz_unitHemisphere = zeros(size(xyz_hem))
+    for kk in 1:N_new
+        xyz_unitHemisphere[:,kk] = [xyz_hem[1,kk], xyz_hem[2,kk],-xyz_hem[3,kk]]
+    end
+    return xyz_unitHemisphere, N_new
+end
+
+# -------------------------------------------------
+### Compute the rotation matrix to properly align the new hemisphere
+# -------------------------------------------------
+### Algorithm to compute a rotation matrix between two vectors
+v = cross(oldCenter, newCenter)
+skewSymmetricMat = [0 -v[3] v[2]; v[3] 0 -v[1]; -v[2] v[1] 0]
+R_old2new = [1 0 0; 0 1 0; 0 0 1] + skewSymmetricMat + skewSymmetricMat*skewSymmetricMat*(1 / (1 + dot(oldCenter,newCenter)))
+
+### Rotate old hemisphere to new position, centered about newCenter
+xyz_unitHemisphere = zeros(size(xyz_hem))
+for kk in 1:N_new
+    xyz_unitHemisphere[:,kk] = R_old2new * xyz_hem[:,kk]
+end
+
+return xyz_unitHemisphere, N_new
 end

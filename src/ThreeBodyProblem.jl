@@ -117,7 +117,9 @@ export  computeR1R2,
         wrapto180,
         wrapto2pi,
         wraptopi,
-        date2str
+        date2str,
+        deserno_sphere,
+        deserno_hemisphere
 
 
 include("plot.jl")

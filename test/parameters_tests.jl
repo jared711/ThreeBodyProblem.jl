@@ -25,14 +25,14 @@ m = 1e22 # {kg} mass
 R = 1e5 # {km} mean radius
 a = 0.2*AU # {km} mean semimajor axis
 T = 2π*sqrt(a^3/(G*newplanet.m)) # {sec} mean orbital period
-name = "Endor"
-newmoon = Body(m, R, a, T, name)
+newmoon = Body(m, R, a, T)
 @test typeof(newmoon) == Body
 @test newmoon.m == m
 @test newmoon.R == R
 @test newmoon.a == a
 @test newmoon.T == T
-@test newmoon.name == name
+@test newmoon.name == "NewPlanet"
+@test newmoon.color == :blue
 
 sys = System(newplanet, newmoon)
 @test typeof(sys.prim) == Body
