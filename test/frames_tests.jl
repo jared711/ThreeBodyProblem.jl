@@ -44,3 +44,14 @@ et = utc2et(date2str(date))
 rv_sun_eci = spkezr("sun", et, "J2000", "none", "earth")[1]
 rv_sci = eci2sci(rv_eci, rv_sun_eci)
 @test norm(rv_eci - sci2eci(rv_sci, rv_sun_eci)) < err_tol
+
+# Test started on April 22, 2021 I want to see a circle
+# sys = sun_earth()
+# Lpts = computeLpts(sys)
+# tt = 0:π/10:2π
+# xx = [[Lpts[1];zeros(3)] for t in tt]
+# plot(sys)
+# for i = 1:length(tt)
+#     rot2inert!(xx[i],tt[i])
+#     scatter!(xx[i][1],xx[i][2])
+# end

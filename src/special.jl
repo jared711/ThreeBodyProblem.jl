@@ -12,11 +12,13 @@ function invariant_manifolds(sys::System, rv₀, T, tf, nPts)
     tspan = (0.,T)
     prob = ODEProblem(CR3BPstm!,w₀,tspan,sys)
     sol = solve(prob, reltol=1e-6)
-    Φₜ = reshape(sol[1:36,end],6,6)
-    rvₜ = sol[37:42,end] # last time step
-    V = eigvecs(Φₜ)
-    Yws = V[:,2]
-    Ywu = V[:,1]
+    Φₜ = Matrix(reshape(sol.u[end][1:36],6,6))
+    rvₜ = sol.u[end][37:42] # last time step
+    Λ,V = eigen(Φₜ,sortby=isreal) # Λ is vector of eigenvalues, V is matrix of eigenvectors
+    Yw = real(V[:,findall(isreal, Λ)]) # Eigenvectors corresponding to real eigenvalues
+    Λ = Λ[findall(isreal, Λ)] # Purely real eigenvalues (have 0.0 imaginary component)
+    Yws = Yw[:,findmin(real(Λ))[2]] # Eigenvector associated with stable eigenvalue λ < 1
+    Ywu = Yw[:,findmax(real(Λ))[2]] # Eigenvector associated with unstable eigenvalue λ > 1
 
     α = 1e-6
     rv0sp = rvₜ + α*Φₜ*Yws/norm(Φₜ*Yws);
@@ -41,4 +43,9 @@ function invariant_manifolds(sys::System, rv₀, T, tf, nPts)
 end
 
 function differential_corrector()
+end
+
+"""
+"""
+function rich3()
 end
