@@ -68,6 +68,10 @@ function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
     return rvdot
 end
 
+function CR3BPdynamics(rv,sys::System,t) #Three body dynamics in Earth/Moon System
+    return CR3BPdynamics(rv,sys.μ,t)
+end
+
 function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
@@ -83,10 +87,6 @@ function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
     rvdot[5]   = -(μ₁*y     /r₁³) - (μ₂*y     /r₂³) - 2*ωₛ*vx + ωₛ^2*y;
     rvdot[6]   = -(μ₁*z     /r₁³) - (μ₂*z     /r₂³);
     return rvdot
-end
-
-function CR3BPdynamics(rv,sys::System,t) #Three body dynamics in Earth/Moon System
-    return CR3BPdynamics(rv,sys.μ,t)
 end
 
 """
@@ -114,15 +114,15 @@ end
 
 
 """
-    CR3BPstm!(wdot,w,μ,t)
+    CR3BPstm(w,μ,t)
 
 Compute change of state vector in normalized CR3BP. w is the concatenation of rv, the
 normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
 is the gravitational parameter {NON}.
 """
-function CR3BPstm!(wdot,w,μ,t) #Three body dynamics in Earth/Moon System
-    Φ = reshape(w[1:36],6,6)
-    rv = w[37:42]
+function CR3BPstm(w,μ,t) #Three body dynamics in Earth/Moon System
+    rv = w[1:6]
+    Φ = reshape(w[7:42],6,6)
     x,y,z,vx,vy,vz = rv
 
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5; # distance to m1, LARGER MASS
@@ -131,7 +131,7 @@ function CR3BPstm!(wdot,w,μ,t) #Three body dynamics in Earth/Moon System
     r₂⁵= ((x - 1 + μ)^2 + y^2 + z^2)^2.5; # distance to m2, smaller mass
 
     omgxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵);
-    omgxy = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵;
+    omgxy = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵;
     omgxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵;
     omgyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵);
     omgyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵;
@@ -146,22 +146,30 @@ function CR3BPstm!(wdot,w,μ,t) #Three body dynamics in Earth/Moon System
         omgxz omgyz omgzz     0	    0	 0 ];
 
     Φdot = F*Φ;
-    wdot[1:36] = reshape(Φdot, 36, 1);
-    rvdot = CR3BPdynamics(rv,μ,t)
-    wdot[37:42] = rvdot
+    wdot = zeros(42)
+    wdot[1:6] = CR3BPdynamics(rv,μ,t)
+    wdot[7:42] = reshape(Φdot, 36, 1);
+    return wdot
+end
+
+function CR3BPstm(w,sys::System,t)
+    return CR3BPstm(w,sys.μ,t)
+end
+
+function CR3BPstm!(wdot,w,μ,t)
+    wdot[:] = CR3BPstm(w,μ,t)
     return nothing
 end
 
 function CR3BPstm!(wdot,w,sys::System,t) #Three body dynamics in Earth/Moon System
-    CR3BPstm!(wdot,w,sys.μ,t)
+    wdot[:] = CR3BPstm(w,sys,t)
     return nothing
 end
 
 """
-    CR3BPinert(rvdot,rv,sys::System,t)
+    CR3BPinert(rvdot,rv,μ,t)
 """
-function CR3BPinert(rv,sys::System,t)
-    μ = sys.μ
+function CR3BPinert(rv,μ,t)
     x,y,z,vx,vy,vz = rv
     r₁ = [x +       μ*cos(t); y +       μ*sin(t); 0]
     r₂ = [x - (1 - μ)*cos(t); y - (1 - μ)*cos(t); 0]
@@ -171,6 +179,13 @@ function CR3BPinert(rv,sys::System,t)
     rvdot[1:3] = [vx;vy;vz]
     rvdot[4:6] = -(1 - μ)*r₁/r₁³ - μ*r₂/r₂³
     return rvdot
+end
+
+"""
+    CR3BPinert(rvdot,rv,sys::System,t)
+"""
+function CR3BPinert(rv,sys::System,t)
+    return CR3BPinert(rv,sys.μ,t)
 end
 
 """
@@ -192,13 +207,20 @@ function CR3BPinert(rv,p::Array,t)
 end
 
 """
+CR3BPinert!(rvdot,rv,μ,t)
+"""
+function CR3BPinert!(rvdot,rv,μ,t)
+    rvdot[:] = CR3BPinert(rv,μ,t)
+    return nothing
+end
+
+"""
     CR3BPinert!(rvdot,rv,sys::System,t)
 """
 function CR3BPinert!(rvdot,rv,sys::System,t)
     rvdot[:] = CR3BPinert(rv,sys,t)
     return nothing
 end
-
 
 """
     CR3BPinert!(rvdot,rv,p::Array,t)
@@ -234,5 +256,109 @@ Inputs: n (scalar) mean motion
 """
 function CWdynamics!(rvdot,rv,n,t)
     rvdot[:] = CWdynamics(rv,n,t)
+    return nothing
+end
+
+
+"""
+    bicircular problem dynamics
+    See G. Gómez, C. Simó, J. Llibre, and R. Martínez, Dynamics and mission design near libration points. Vol. II, vol. 3. 2001.
+"""
+function BCPdynamics(rv, μ, m₃, n₃, t)
+    x,y,z,vx,vy,vz = rv
+
+    # Xₑ = μ*cos(t);      Yₑ = μ*sin(t);      Zₑ = 0
+    # Xₘ = (μ-1)*cos(t);  Yₘ = (μ-1)*sin(t);  Zₘ = 0
+    # Xₛ = a₃*cos(n₃*t);  Yₛ = a₃*sin(n₃*t);  Zₛ = 0
+
+    a₃ = (1+m₃)^(1/3)/n₃^(2/3)
+    θ = (1-n₃)*t
+    x₃ =  a₃*cos(θ)
+    y₃ = -a₃*sin(θ)
+
+    r₁³ = (  (x+μ)^2 +      y^2 + z^2)^1.5; # distance to m1, LARGER MASS
+    r₂³ = ((x-1+μ)^2 +      y^2 + z^2)^1.5; # distance to m2, smaller mass
+    r₃³ = ( (x-x₃)^2 + (y-y₃)^2 + z^2)^1.5;
+
+    rvdot = zeros(6)
+    rvdot[1:3] = [vx;vy;vz]
+    rvdot[4] = -(1-μ)*(x+μ)/r₁³ - μ*(x-1+μ)/r₂³ - m₃*(x-x₃)/r₃³ - m₃*cos(θ)/a₃^2 + 2*vy + x;
+    rvdot[5] = -(1-μ)  *  y/r₁³ - μ   *   y/r₂³ - m₃*(y-y₃)/r₃³ + m₃*sin(θ)/a₃^2 - 2*vx + y;
+    rvdot[6] = -(1-μ)  *  z/r₁³ - μ   *   z/r₂³ - m₃  *   z/r₃³;
+    return rvdot
+end
+
+function BCPdynamics(rv, sys::BicircularSystem, t)
+    return BCPdynamics(rv, sys.μ, sys.m₃, sys.n₃, t)
+end
+
+function BCPdynamics!(rvdot, rv, μ, m₃, n₃, t)
+    rvdot[:] = BCPdynamics(rv, μ, m₃, n₃, t)
+    return nothing
+end
+
+function BCPdynamics!(rvdot, rv, sys::BicircularSystem, t)
+    rvdot[:] = BCPdynamics(rv, sys, t)
+    return nothing
+end
+
+
+"""
+    BCPstm(wdot, w, μ, m₃, n₃, t)
+
+Compute change of state vector in normalized Bicircular. w is the concatenation of rv, the
+normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
+is the gravitational parameter {NON}.
+"""
+function BCPstm(wdot,w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
+    rv = w[1:6]
+    Φ = reshape(w[7:42],6,6)
+    x,y,z,vx,vy,vz = rv
+
+    a₃ = (1+m₃)^(1/3)/n₃^(2/3)
+    θ = (1-n₃)*t
+    x₃ =  a₃*cos(θ)
+    y₃ = -a₃*sin(θ)
+
+    r₁ = sqrt(  (x+μ)^2 +      y^2 + z^2) # distance to m1, Larger Mass
+    r₂ = sqrt((x-1+μ)^2 +      y^2 + z^2) # distance to m2, smaller mass
+    r₃ = sqrt( (x-x₃)^2 + (y-y₃)^2 + z^2) # distance to m3, LARGEST MASS
+    r₁³ = r₁^3; r₂³ = r₂^3; r₃³ = r₃^3
+    r₁⁵ = r₁^5; r₂⁵ = r₂^5; r₃⁵ = r₃^5
+
+    g11 = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵) - m₃*(1/r₃³ - 3*(x-x₃)^2/r₃⁵)
+    g12 = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵ + 3*m₃*(x-x₃)*(y-y₃)/r₃⁵
+    # g13 = 0 # planar assumption
+    g13 = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵ + 3*m₃*(x-x₃)*z/r₃⁵
+    g22 = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵) - m₃*(1/r₃³ - 3*(y-y₃)^2/r₃⁵)
+    # g23 = 0 # planar assumption
+    g23 = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵ + 3*m₃*(y-y₃)*z/r₃⁵
+    # g33 = -(1-μ)/r₁³ - μ/r₂³ - m₃/r₃³ # planar assumption
+    g33 = -(1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵) - m₃*(1/r₃³ - 3*z^2/r₃⁵)
+
+    F = [  0   0   0  1   0   0 ;
+           0   0   0  0   1   0 ;
+           0   0   0  0   0   1 ;
+         g11 g12 g13  0   2   0 ;
+         g12 g22 g23 -2   0   0 ;
+         g13 g23 g33  0	  0   0 ]
+
+    Φdot = F*Φ
+    wdot[1:6] = BCPdynamics(rv,μ,m₃,n₃,t)
+    wdot[7:42] = reshape(Φdot, 36, 1);
+    return wdot
+end
+
+function BCPstm(w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
+    return BCPstm(w, sys.μ, sys.m₃, sys.n₃ ,t)
+end
+
+function BCPstm!(wdot,w,μ,m₃,n₃,t) #Three body dynamics in Earth/Moon System
+    wdot[:] = BCPstm(w,μ,m₃,n₃,t)
+    return nothing
+end
+
+function BCPstm!(wdot,w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
+    wdot[:] = BCPstm(w,sys,t)
     return nothing
 end
