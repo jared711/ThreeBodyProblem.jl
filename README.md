@@ -1,4 +1,4 @@
-# ThreeBodyProblem
+![ThreeBodyProblem.jl](docs/src/assets/banner.png)
 
 [![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl/)
 [![Build Status](https://travis-ci.com/jared711/ThreeBodyProblem.jl.svg?branch=master)](https://travis-ci.com/jared711/ThreeBodyProblem.jl)
@@ -27,12 +27,11 @@ To run Jupyter notebooks, you need to have the IJulia package downloaded.
 using Pkg
 Pkg.add("IJulia")
 ```
-Then run
+Then run the following from your desired working directory
 ```julia
 using IJulia
 notebook(dir=".",detached=true)
 ```
-If you want to work in a different directory than your current working dire
 
 ## Documentation
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl)
