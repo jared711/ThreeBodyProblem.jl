@@ -32,6 +32,7 @@ rvdot = zeros(6)
 wdot = zeros(42)
 w = [reshape(I(6),36,1); rv]
 @test CR3BPstm!(wdot, w, sys, t) == nothing
+@test wdot == CR3BPstm(w, sys, t)
 
 rvdot = zeros(6)
 @test R2BPdynamics!(rvdot, rv_dim, sys.prim, t) == nothing
@@ -45,3 +46,8 @@ rvdot = zeros(6)
 n = 1e-3
 @test CWdynamics!(rvdot, rv, n, t) == nothing
 @test rvdot == CWdynamics(rv, n, t)
+
+bisys = earth_moon_sun()
+rvdot = zeros(6)
+@test BCPdynamics!(rvdot, rv, bisys, t) == nothing
+@test rvdot == BCPdynamics(rv, bisys, t)
