@@ -36,8 +36,8 @@ sec::Body       # Secondary body
 μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
 μ::Float64      # {} mass parameter
 d::Float64      # {km} average distance between two primaries
-R₁::Float64     # {km} Radius of primary Body
-R₂::Float64     # {km} Radius of Secondary Body
+R₁::Float64     # {km} Radius of primary body
+R₂::Float64     # {km} Radius of secondary Body
 T::Float64      # {s} sidereal orbital period
 RUNIT::Float64  # {km} distance normalizing parameter
 VUNIT::Float64  # {km/s} velocity normalizing parameter
@@ -55,11 +55,61 @@ struct System
     R₂::Float64     # {km} Radius of Secondary Body
     T::Float64      # {s} sidereal orbital period
     RUNIT::Float64  # {km} distance normalizing parameter
-    VUNIT::Float64  # {km/s} velocity normalizing parameter
     TUNIT::Float64  # {s} time normalizing parameter
+    VUNIT::Float64  # {km/s} velocity normalizing parameter
+    AUNIT::Float64  # {km^2/s} acceleration normalizing parameter
     name::String    # name of system (e.g. "Earth/Moon")
 end
-System(prim::Body, sec::Body) = System(prim, sec, prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), sec.a, prim.R, sec.R, sec.T, sec.a, sec.T/2π, sec.a*2π/sec.T,string(prim.name,"/",sec.name))
+System(prim::Body, sec::Body) = System(prim, sec, prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), sec.a, prim.R, sec.R, sec.T, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name))
+
+"""
+    BicircularSystem(prim, sec, μ₁, μ₂, μ, d, R₁, R₂, T, RUNIT, VUNIT, TUNIT, name)
+    BicircularSystem(prim::Body, sec::Body)
+
+A BicircularSystem defined by primary, secondary, and tertiary bodies (prim, sec, and ter)
+prim::Body      # Primary body
+sec::Body       # Secondary body
+ter::Body       # Tertiary body
+μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
+μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
+μ₃::Float64     # {km^3/s^2} gravitational parameter of tertiary body
+μ::Float64      # {} mass parameter, μ₂/(μ₁+μ₂)
+d::Float64      # {km} average distance between two primaries
+R₁::Float64     # {km} Radius of primary body
+R₂::Float64     # {km} Radius of secondary body
+R₃::Float64     # {km} Radius of tertiary body
+T::Float64      # {s} sidereal orbital period
+RUNIT::Float64  # {km} distance normalizing parameter
+VUNIT::Float64  # {km/s} velocity normalizing parameter
+TUNIT::Float64  # {s} time normalizing parameter
+name::String    # name of system (e.g. "Earth/Moon/Sun")
+"""
+struct BicircularSystem
+    prim::Body      # Primary body
+    sec::Body       # Secondary body
+    ter::Body       # Tertiary body
+    μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
+    μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
+    μ₃::Float64     # {km^3/s^2} gravitational parameter of tertiary body
+    μ::Float64      # {} mass parameter, μ₂/(μ₁+μ₂)
+    m₃::Float64     # {} normalized mass of tertiary body
+    d::Float64      # {km} average distance between two primaries
+    R₁::Float64     # {km} Radius of primary Body
+    R₂::Float64     # {km} Radius of Secondary Body
+    R₃::Float64     # {km} Radius of tertiary body
+    T::Float64      # {s} sidereal orbital period of prim and sec about each other
+    n₃::Float64     # {} normalized mean motion of tertiary body
+    RUNIT::Float64  # {km} distance normalizing parameter
+    TUNIT::Float64  # {s} time normalizing parameter
+    VUNIT::Float64  # {km/s} velocity normalizing parameter
+    AUNIT::Float64  # {km^2/s} acceleration normalizing parameter
+    name::String    # name of system (e.g. "Earth/Moon/SUN")
+end
+BicircularSystem(prim::Body, sec::Body, ter::Body) = BicircularSystem(prim, sec, ter,
+    prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.a, prim.R,
+    sec.R, ter.R, sec.T, sec.T/prim.T, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2,
+    string(prim.name,"/",sec.name,"/",ter.name))
+
 
 ### Setting Parameters for Various Bodies and Systems
 # Values from wikipedia
@@ -163,6 +213,11 @@ jupiter_europa() = System(JUPITER, EUROPA)
     saturn_enceladus()
 """
 saturn_enceladus() = System(SATURN, ENCELADUS)
+
+"""
+    sun_earth_moon()
+"""
+earth_moon_sun() = BicircularSystem(EARTH, MOON, SUN)
 
 ## Extra values from ephemeris files
 # MARS        = Body(4.282837362069909E+04/G,

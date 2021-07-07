@@ -17,7 +17,8 @@ export  System,
         sun_uranus,
         sun_neptune,
         jupiter_europa,
-        saturn_enceladus
+        saturn_enceladus,
+        earth_moon_sun
         # SUN
         # MERCURY
         # VENUS
@@ -75,10 +76,13 @@ export  R2BPdynamics!,
         CR3BPdynamics!,
         CR3BPdynamics,
         CR3BPstm!,
+        CR3BPstm,
         CR3BPinert!,
         CR3BPinert,
         CWdynamics!,
-        CWdynamics
+        CWdynamics,
+        BCPdynamics!,
+        BCPdynamics
 
 include("orbitalelements.jl")
 export  AP2a,
@@ -90,8 +94,6 @@ export  AP2a,
         M2E,
         azel2cart,
         cart2azel
-
-
 
 include("util.jl")
 export  computeR1R2,
@@ -119,7 +121,8 @@ export  computeR1R2,
         wraptopi,
         date2str,
         deserno_sphere,
-        deserno_hemisphere
+        deserno_hemisphere,
+        gammaL
 
 
 include("plot.jl")
@@ -128,6 +131,7 @@ export  circle,
 
 include("special.jl")
 export  invariant_manifolds,
+        rich3,
         differential_corrector
 
 end # module
