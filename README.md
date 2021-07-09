@@ -7,6 +7,9 @@
 
 An astrodynamics package for working in the three body problem.
 
+## Requirements
+Julia 1.6+
+
 ## Installation
 ThreebodyProblem.jl is not on the General Registry yet, so you must use Git to clone it to your computer.
 ```shell
@@ -34,4 +37,4 @@ notebook(dir=".",detached=true)
 ```
 
 ## Documentation
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl)
+Documentation is found [here](https://jared711.github.io/ThreeBodyProblem.jl)
