@@ -1,3 +1,5 @@
+using PolynomialRoots
+
 """
      computeR1R2(μ)
 
@@ -327,7 +329,7 @@ end
 Compute the stability index for a trajectory given its state transition matrix Φ
 """
 function stability_index(Φ)
-    return Φ
+    return 1
 end
 
 """
@@ -528,7 +530,7 @@ function date2str(date)
 end
 
 """
-    desernosphere(N_desired)
+    deserno_sphere(N_desired)
 
     Adapted from Lucas Bury's code implementing the algorithm in Deserno, M. (2004) How to
     Generate Equidistributed points on the Surface of a Sphere
@@ -569,6 +571,9 @@ xyz_Sphere = copy(transpose(hcat(xs, ys, zs)))
 return xyz_Sphere, N_new
 end
 
+"""
+deserno_hemisphere(N_desired, newCenter)
+"""
 function deserno_hemisphere(N_desired, newCenter)
 # -------------------------------------------------
 ### Obtaining spherical point cloud
@@ -619,4 +624,31 @@ for kk in 1:N_new
 end
 
 return xyz_unitHemisphere, N_new
+end
+
+"""
+Calculate the ratio of Lagrange point distance from closest primary to distance between two primaries
+"""
+function gammaL(sys::System, Lpt::Int)
+    μ = sys.μ
+
+    # poly1 = [1, -1*(3-μ), (3-2*μ),     -μ,      2*μ,     -μ];
+    # poly2 = [1,    (3-μ), (3-2*μ),     -μ,     -2*μ,     -μ];
+    # poly3 = [1,    (2+μ), (1+2*μ), -(1-μ), -2*(1-μ), -(1-μ)];
+
+    poly1 = [    -μ,      2*μ,     -μ, (3-2*μ), -1*(3-μ), 1];
+    poly2 = [    -μ,     -2*μ,     -μ, (3-2*μ),    (3-μ), 1];
+    poly3 = [-(1-μ), -2*(1-μ), -(1-μ), (1+2*μ),    (2+μ), 1];
+
+    rt1 = roots(poly1)
+    rt2 = roots(poly2)
+    rt3 = roots(poly3)
+
+    Γ = zeros(3)
+    for i=1:5
+            if isreal(rt1[i]) Γ[1]=rt1[i]; end
+            if isreal(rt2[i]) Γ[2]=rt2[i]; end
+            if isreal(rt3[i]) Γ[3]=rt3[i]; end
+    end
+    γ = Γ[Lpt];
 end

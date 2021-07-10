@@ -25,6 +25,14 @@ function findrP(rv::Array, p::Array=[0,0,0])
     return rP, idx
 end
 
+function computeME(rv::Array, μ)
+    r_ECI = rv[1:3]
+    v_ECI = rv[4:6]
+    r = norm(r_ECI)
+    v = norm(v_ECI)
+    return 0.5*v^2 - μ/r
+end
+
 """
     cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
 
@@ -57,6 +65,7 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
 
     # size of orbit
     ℰ = 0.5*v^2 - μ/r   # [km²/s²] specific mechanical energy
+    # ℰ = computeME(rv, μ)
 
     if e == 1
         a = Inf         # [km] semimajor axis
@@ -105,6 +114,16 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
 
     return a, e, i, Ω, ω, ν, Π, u, l, ℰ
 end
+
+# function cart2oe(, sys::System, body::Symbol; ang_unit::Symbol=:deg)
+#     if body == :prim
+#         return cart2oe(rot2inert(rv, θ, μ; origin=:barycenter), sys.μ1, ang_unit=ang_unit)
+#     elseif body == :sec
+#         return cart2oe(rot2inert(rv, θ, μ; origin=:barycenter), sys.μ2, ang_unit=ang_unit)
+#     else
+#         error("body should be :prim or :sec")
+#     end
+# end
 
 """
     oe2cart(a, e, i, Ω, ω, ν, μ; ang_unit::Symbol=:deg)

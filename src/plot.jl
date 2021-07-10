@@ -63,6 +63,20 @@ end
     end
 end
 
+@recipe function f(body::Body; legend=true, center=[0,0,0], scale=1)
+    legend := legend
+    legend := :topleft
+    aspect_ratio --> :equal
+
+    @series begin
+        label := body.name
+        seriescolor := body.color
+        seriestype --> :shape
+        fillalpha --> 0.5
+        x,y = circle(body.R*scale, center)
+    end
+end
+
 #
 # function plot_earth(;CR3BP=true,col='b',n=100)
 #     CR3BP ? r = earth.r/moon.a      : r = earth.r

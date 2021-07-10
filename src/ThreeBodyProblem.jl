@@ -19,56 +19,61 @@ export  System,
         jupiter_europa,
         saturn_enceladus,
         earth_moon_sun
-        # SUN
-        # MERCURY
-        # VENUS
-        # EARTH
-        # MARS
-        # JUPITER
-        # SATURN
-        # URANUS
-        # NEPTUNE
-        # PLUTO
-        # MOON
-        # PHOBOS
-        # DEIMOS
-        # IO
-        # EUROPA
-        # GANYMEDE
-        # CALLISTO
-        # AMALTHEA
-        # MIMAS
-        # ENCELADUS
-        # TETHYS
-        # DIONE
-        # RHEA
-        # TITAN
-        # HYPERION
-        # IAPETUS
-        # PHOEBE
-        # ARIEL
-        # UMBRIEL
-        # TITANIA
-        # OBERON
-        # MIRANDA
-        # TRITON
-        # NEREID
-        # PROTEUS
-        # CHARON
-        # NIX
-        # HYDRA
-        # KERBEROS
-        # STYX
+        SUN
+        MERCURY
+        VENUS
+        EARTH
+        MARS
+        JUPITER
+        SATURN
+        URANUS
+        NEPTUNE
+        PLUTO
+        MOON
+        PHOBOS
+        DEIMOS
+        IO
+        EUROPA
+        GANYMEDE
+        CALLISTO
+        AMALTHEA
+        MIMAS
+        ENCELADUS
+        TETHYS
+        DIONE
+        RHEA
+        TITAN
+        HYPERION
+        IAPETUS
+        PHOEBE
+        ARIEL
+        UMBRIEL
+        TITANIA
+        OBERON
+        MIRANDA
+        TRITON
+        NEREID
+        PROTEUS
+        CHARON
+        NIX
+        HYDRA
+        KERBEROS
+        STYX
 
 include("frames.jl")
 export  rot2inert!,
+        rot2inert,
         r2latlon,
         enu2ecef,
         ecef2enu,
         ecef2eci,
         eci2ecef,
         eci2sci,
-        sci2eci
+        sci2eci,
+        dimensionalize!,
+        dimensionalize,
+        nondimensionalize!,
+        nondimensionalize
 
 include("dynamics.jl")
 export  R2BPdynamics!,
@@ -82,7 +87,9 @@ export  R2BPdynamics!,
         CWdynamics!,
         CWdynamics,
         BCPdynamics!,
-        BCPdynamics
+        BCPdynamics,
+        BCPstm!,
+        BCPstm
 
 include("orbitalelements.jl")
 export  AP2a,

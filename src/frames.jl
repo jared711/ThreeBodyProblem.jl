@@ -3,11 +3,17 @@ using SPICE
 # furnsh("src/kernels/naif0012.tls")
 
 """
-    rot2inert!(rv,θ)
+    rot2inert(rv,θ)
 Synodic (rotating) frame to inertial frame
 """
 # function rot2inert!(rv, θ, μ; origin="barycenter")
-function rot2inert!(rv, θ)
+function rot2inert(rv, θ, μ; origin=:barycenter)
+    if origin == :barycenter
+    elseif origin == :prim
+        rv -= [-μ, 0, 0, 0, 0, 0]
+    elseif origin == :sec
+        rv -= [1-μ, 0, 0, 0, 0, 0]
+    end
     cθ, sθ = cos(θ), sin(θ)
     A =  [cθ -sθ  0;
           sθ  cθ  0;
@@ -17,15 +23,32 @@ function rot2inert!(rv, θ)
            0   0  0]
     C = [A zeros(3,3);
          B A]
-    rv[1:6] = C*rv
+    return C*rv
+end
+
+"""
+    rot2inert!(rv,θ)
+Synodic (rotating) frame to inertial frame
+"""
+function rot2inert!(rv, θ, μ; origin=:barycenter)
+# function rot2inert!(rv, θ)
+    rv[1:6] = rot2inert(rv, θ, μ, origin=origin)
     return nothing
 end
 
-function rot2inert!(rv, θ, p::Array; origin=0)
+function rot2inert(rv, θ, p::Array; origin=:barycenter)
 # function S2I!(rv,t,p::Array)
     μ₁,μ₂,d = p # parameters
+
+    if origin == :barycenter
+    elseif origin == :prim
+        rv -= [-d*μ₂/(μ₁ + μ₂), 0, 0, 0, 0, 0]
+    elseif origin == :sec
+        rv -= [d*(1-μ₂/(μ₁ + μ₂)), 0, 0, 0, 0, 0]
+    end
+
     ωₛ = sqrt((μ₁ + μ₂)/d^3);
-    cθ, sθ = cos(ωₛ*t), sin(ωₛ*t)
+    cθ, sθ = cos(ωₛ*θ), sin(ωₛ*θ)
     A = [cθ -sθ  0;
          sθ  cθ  0;
           0   0  1]
@@ -34,7 +57,11 @@ function rot2inert!(rv, θ, p::Array; origin=0)
            0   0  0]
     C = [A zeros(3,3);
          B A]
-    rv[1:6] = C*rv
+    return C*rv
+end
+
+function rot2inert!(rv, θ, p::Array; origin=0)
+    rv[1:6] = rot2inert(rv, θ, p, origin=origin)
     return nothing
 end
 
@@ -211,4 +238,22 @@ function sci2CR3BP()
 end
 
 function CR3BP2sci()
+end
+
+function dimensionalize(rv, sys::System)
+    return vcat(rv[1:3]*sys.RUNIT, rv[4:6]*sys.VUNIT)
+end
+
+function dimensionalize!(rv, sys::System)
+    rv[1:6] = dimensionalize(rv,sys)
+    return nothing
+end
+
+function nondimensionalize(rv, sys::System)
+    return vcat(rv[1:3]/sys.RUNIT, rv[4:6]/sys.VUNIT)
+end
+
+function nondimensionalize!(rv, sys::System)
+    rv[1:6] = nondimensionalize(rv,sys)
+    return nothing
 end
