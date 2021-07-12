@@ -18,7 +18,23 @@ function sphere(r=1,c=[0,0,0],col='b',n=100)
     return x,y,z
 end
 
-@recipe function f(sys::System; scaled=false)
+function trajectory(rv)
+    if length(rv[1]) == 2 || length(rv[1]) == 4
+        x = [rv[i][1] for i = 1:length(rv)]
+        y = [rv[i][2] for i = 1:length(rv)]
+        return x,y
+    elseif length(rv[1]) == 3 || length(rv[1]) == 6
+        x = [rv[i][1] for i = 1:length(rv)]
+        y = [rv[i][2] for i = 1:length(rv)]
+        z = [rv[i][3] for i = 1:length(rv)]
+        return x,y,z
+    else
+        error("rv should be 2xN, 3xN, 4xN, or 6xN")
+    end
+end
+
+
+@recipe function f(sys::System; prim=true, sec=true, Lpts=true, scaled=false)
     name1, name2 = split(sys.name, '/')
     color1 = sys.prim.color
     color2 = sys.sec.color
@@ -28,42 +44,48 @@ end
     legend := :topleft
     aspect_ratio --> :equal
 
-    @series begin
-        markershape --> :x
-        seriestype --> :scatter
-        markercolor --> :black
-        label := "Lagrange Points"
-        x = [L1[1], L2[1], L3[1], L4[1], L5[1]]
-        y = [L1[2], L2[2], L3[2], L4[2], L5[2]]
-        x,y
-    end
-
-    @series begin
-        label := name1
-        seriescolor := color1
-        seriestype --> :shape
-        fillalpha --> 0.5
-        if scaled
-            x,y = circle(0.1, [-sys.μ,0,0])
-        else
-            x,y = circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+    if Lpts
+        @series begin
+            markershape --> :x
+            seriestype --> :scatter
+            markercolor --> :black
+            label := "Lagrange Points"
+            x = [L1[1], L2[1], L3[1], L4[1], L5[1]]
+            y = [L1[2], L2[2], L3[2], L4[2], L5[2]]
+            x,y
         end
     end
 
-    @series begin
-        label := name2
-        seriescolor := color2
-        seriestype --> :shape
-        fillalpha --> 0.5
-        if scaled
-            x,y = circle(0.025, [1-sys.μ,0,0])
-        else
-            x,y = circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0])
+    if prim
+        @series begin
+            label := name1
+            seriescolor := color1
+            seriestype --> :shape
+            fillalpha --> 0.5
+            if scaled
+                x,y = circle(0.1, [-sys.μ,0,0])
+            else
+                x,y = circle(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+            end
+        end
+    end
+
+    if sec
+        @series begin
+            label := name2
+            seriescolor := color2
+            seriestype --> :shape
+            fillalpha --> 0.5
+            if scaled
+                x,y = circle(0.025, [1-sys.μ,0,0])
+            else
+                x,y = circle(sys.R₂/sys.RUNIT, [1-sys.μ,0,0])
+            end
         end
     end
 end
 
-@recipe function f(body::Body; legend=true, center=[0,0,0], scale=1)
+@recipe function f(body::Body; legend=true, center=[0,0,0], scalar=1)
     legend := legend
     legend := :topleft
     aspect_ratio --> :equal
@@ -73,7 +95,20 @@ end
         seriescolor := body.color
         seriestype --> :shape
         fillalpha --> 0.5
-        x,y = circle(body.R*scale, center)
+        x,y = circle(body.R*scalar, center)
+    end
+end
+
+@recipe function f(rv::Vector{Vector{T}} where T<:Real; label="trajectory", color=:black)
+
+    @series begin
+        label := label
+        seriescolor := color
+        if length(rv[1]) == 2 || length(rv[1]) == 4
+            x,y = trajectory(rv)
+        elseif length(rv[1]) == 3 || length(rv[1]) == 6
+            x,y,z = trajectory(rv)
+        end
     end
 end
 
