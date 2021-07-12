@@ -1,3 +1,4 @@
+# This is the module file
 module ThreeBodyProblem
 
 include("constants.jl")
