@@ -33,9 +33,8 @@ plot!(sol,vars=(1,2,3),label="Actual",linecolor=:red)
 
 ## We can see that this orbit diverges before completing a period
 ## We need to use a differential corrector to hone in on the true periodic orbit
-rv₀ = rvs[1,:]
 myconst = 3
-rv₀, ttf = differential_corrector(sys, rv₀, myconst)
+rv₀, ttf = differential_corrector(sys, rvs[1,:], myconst, tf=T)
 Juno.@enter differential_corrector(sys, rv₀, myconst, tf=10.0) #
 
 Φ₀ = I(6)

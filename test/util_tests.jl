@@ -51,12 +51,14 @@ mytime4 = [1582, 11, 1]
 mytime5 = [1582, 10, 1]
 mytime6 = [1582, 10, 11]
 mytime7 = [1582, 10, 5]
+mytime8 = [1993, 4, 19]
 @test date2mjd(mytime2) == date2mjd(mytime)
 @test date2mjd(mytime3) == -314577.0
 @test date2mjd(mytime4) == -100823.0
 @test date2mjd(mytime5) == -101728.0
 @test date2mjd(mytime6) == -100844.0
 @test isnan(date2mjd(mytime7))
+@test date2mjd(mytime8) == 49096.0
 
 @test_throws ErrorException("ut1_date should be [Y,M,D] or [Y,M,D,h,m,s]") date2mjd(1)
 
@@ -77,3 +79,13 @@ mytime7 = [1582, 10, 5]
 @test wraptopi(π) == π
 @test wraptopi(2π) == 0.
 @test wraptopi(-2π) == 0.
+
+@test rotlatlon(π/2,-π/2,ang_unit=:rad) == I
+@test_throws ErrorException("ang_unit should be :deg or :rad") rotlatlon(0,0,ang_unit=:foo)
+
+@test mjd2gmst(51544.5,ang_unit=:deg) == 280.4606
+@test_throws ErrorException("ang_unit should be :deg or :rad") mjd2gmst(0,ang_unit=:foo)
+
+xyz_sphere,N = deserno_hemisphere(100,[1,0,0])
+@test abs(minimum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
+@test abs(maximum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10

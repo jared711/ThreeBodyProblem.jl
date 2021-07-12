@@ -23,6 +23,10 @@ end
     include("plot_tests.jl")
 end
 
+@safetestset "special.jl tests" begin
+    include("special_tests.jl")
+end
+
 @safetestset "util.jl tests" begin
     include("util_tests.jl")
 end
