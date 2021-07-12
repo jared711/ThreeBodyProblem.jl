@@ -12,6 +12,10 @@ function computeR1R2(μ::Number)
     return R₁, R₂
 end
 
+function computeR1R2(sys::System)
+    return computeR1R2(sys.μ)
+end
+
 """
     computeR1R2(p::Array)
 
@@ -37,6 +41,10 @@ function computer1r2(rv,μ)
     r₁ = (x + μ)^2      + y^2 + z^2
     r₂ = (x - 1 + μ)^2  + y^2 + z^2
     return r₁, r₂
+end
+
+function computer1r2(rv,sys::System)
+    return computer1r2(rv,sys.μ)
 end
 
 """
@@ -74,6 +82,8 @@ function computeL1(μ;tol=1e-15)
     L1 = [1 - μ - α; 0; 0]
     return L1
 end
+computeL1(sys::System; tol=1e-15) = computeL1(sys.μ, tol=tol)
+
 
 """
     computeL1(p::Array;tol=1e-15)
@@ -108,6 +118,8 @@ function computeL2(μ;tol=1e-15)
     L2 = [1 - μ + β; 0; 0]
     return L2
 end
+computeL2(sys::System; tol=1e-15) = computeL2(sys.μ, tol=tol)
+
 
 """
     computeL2(p::Array;tol=1e-15)
@@ -143,6 +155,9 @@ function computeL3(μ;tol=1e-15)
     return L3
 end
 
+computeL3(sys::System; tol=1e-15) = computeL3(sys.μ, tol=tol)
+
+
 """
     computeL3(p::Array;tol=1e-15)
 
@@ -163,7 +178,7 @@ end
 ComputeL4 3D L4 in a normalized CR3BP given μ, the system mass parameter.
 """
 computeL4(μ;tol=1e-15) = [0.5-μ; √3/2; 0]
-
+computeL4(sys::System; tol=1e-15) = computeL4(sys.μ, tol=tol)
 """
     computeL4(p::Array;tol=1e-15)
 
@@ -184,6 +199,7 @@ end
 Compute 3D L5 in a normalized CR3BP given μ, the system mass parameter.
 """
 computeL5(μ;tol=1e-15) = [0.5-μ; -√3/2; 0]
+computeL5(sys::System; tol=1e-15) = computeL5(sys.μ, tol=tol)
 
 """
     computeL5(p::Array;tol=1e-15)
@@ -214,6 +230,12 @@ function computeLpts(μ; tol=1e-15)
         ]
     return Lpts
 end
+"""
+    computeLpts(sys::System;tol=1e-15)
+
+Compute 3D Lagrange points in a non-normalized CR3BP given system S.
+"""
+computeLpts(sys::System; tol=1e-15) = computeLpts(sys.μ, tol=tol)
 
 """
     computeLpts(p::Array;tol=1e-15)
@@ -230,17 +252,6 @@ function computeLpts(p::Array;tol=1e-15)
 end
 
 """
-    computeLpts(sys::System;tol=1e-15)
-
-Compute 3D Lagrange points in a non-normalized CR3BP given system S.
-"""
-function computeLpts(sys::System;tol=1e-15)
-    μ = sys.μ
-    Lpts = computeLpts(μ,tol=tol)
-    return Lpts
-end
-
-"""
     computeUeff(rv,μ)
 
 Compute effective potential given normalized state rv {NON} and mass parameter {NON}
@@ -251,6 +262,7 @@ function computeUeff(rv,μ)
     Ueff = -(x^2 + y^2)/2 - (1-μ)/r₁ - μ/r₂;
     return Ueff
 end
+computeUeff(rv,sys::System) = computeUeff(rv,sys.μ)
 
 """
     computeUeff(rv,p::Array)
@@ -280,6 +292,12 @@ function computeC(rv,μ)
     C = -2*Ueff - v^2
     return C
 end
+"""
+    computeC(rv,sys::System)
+
+Compute Jacobi constant given normalized state rv {NON} and system
+"""
+computeC(rv,sys::System) = computeC(rv, sys.μ)
 
 """
     computeC(rv,p::Array)
@@ -296,15 +314,7 @@ function computeC(rv,p::Array)
     return C
 end
 
-"""
-    computeC(rv,sys::System)
 
-Compute Jacobi constant given normalized state rv {NON} and system
-"""
-function computeC(rv,sys::System)
-    C = computeC(rv, sys.μ)
-    return C
-end
 
 """
     computeT(rv,sys::System) UNFINISHED (I don't like this name, "tisserand" is better)
@@ -572,13 +582,13 @@ return xyz_Sphere, N_new
 end
 
 """
-deserno_hemisphere(N_desired, newCenter)
+deserno_hemisphere(N_desired, normal)
 """
-function deserno_hemisphere(N_desired, newCenter)
+function deserno_hemisphere(N_desired, normal)
 # -------------------------------------------------
 ### Obtaining spherical point cloud
 # -------------------------------------------------
-xyz_Sphere, N_sphere = deserno_hemisphere(N_desired*2);
+xyz_Sphere, N_sphere = deserno_sphere(N_desired*2);
 
 # -------------------------------------------------
 ### Grab the desired hemisphere
@@ -594,14 +604,14 @@ N_new = size(xyz_hem, 2)
 ### If new center is in the -z axis, just flip the signs on the existing hemisphere
 # -------------------------------------------------
 ### In getSphere, the pattern is centered around the 'z' axis
-oldCenter = [0, 0, 1]
+oldNormal = [0, 0, 1]
 
 ### Turn input vector to unit vector
-newCenter = newCenter ./ norm(newCenter)
+normal = normal ./ norm(normal)
 
 ### In case the new center is in the opposite direction of the old center, can
 ### save computational time with this (but also the other algorithm breaks)
-if newCenter == -oldCenter
+if normal == -oldNormal
     xyz_unitHemisphere = zeros(size(xyz_hem))
     for kk in 1:N_new
         xyz_unitHemisphere[:,kk] = [xyz_hem[1,kk], xyz_hem[2,kk],-xyz_hem[3,kk]]
@@ -613,11 +623,11 @@ end
 ### Compute the rotation matrix to properly align the new hemisphere
 # -------------------------------------------------
 ### Algorithm to compute a rotation matrix between two vectors
-v = cross(oldCenter, newCenter)
+v = cross(oldNormal, normal)
 skewSymmetricMat = [0 -v[3] v[2]; v[3] 0 -v[1]; -v[2] v[1] 0]
-R_old2new = [1 0 0; 0 1 0; 0 0 1] + skewSymmetricMat + skewSymmetricMat*skewSymmetricMat*(1 / (1 + dot(oldCenter,newCenter)))
+R_old2new = [1 0 0; 0 1 0; 0 0 1] + skewSymmetricMat + skewSymmetricMat*skewSymmetricMat*(1 / (1 + dot(oldNormal,normal)))
 
-### Rotate old hemisphere to new position, centered about newCenter
+### Rotate old hemisphere to new position, centered about normal
 xyz_unitHemisphere = zeros(size(xyz_hem))
 for kk in 1:N_new
     xyz_unitHemisphere[:,kk] = R_old2new * xyz_hem[:,kk]
