@@ -64,6 +64,8 @@ export  System,
 include("frames.jl")
 export  rot2inert!,
         rot2inert,
+        inert2rot!,
+        inert2rot,
         r2latlon,
         enu2ecef,
         ecef2enu,

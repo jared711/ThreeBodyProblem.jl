@@ -3,8 +3,8 @@ using SPICE
 # furnsh("src/kernels/naif0012.tls")
 
 """
-    rot2inert(rv,θ)
-Synodic (rotating) frame to inertial frame
+    rot2inert(rv,θ,μ)
+Rotating (synodic) frame to inertial frame
 """
 # function rot2inert!(rv, θ, μ; origin="barycenter")
 function rot2inert(rv, θ, μ; origin=:barycenter)
@@ -25,9 +25,10 @@ function rot2inert(rv, θ, μ; origin=:barycenter)
          B A]
     return C*rv
 end
+rot2inert(rv, θ, sys::System; origin=:barycenter) = rot2inert(rv, θ, sys.μ, origin=origin)
 
 """
-    rot2inert!(rv,θ)
+    rot2inert!(rv,θ,μ)
 Synodic (rotating) frame to inertial frame
 """
 function rot2inert!(rv, θ, μ; origin=:barycenter)
@@ -35,6 +36,11 @@ function rot2inert!(rv, θ, μ; origin=:barycenter)
     rv[1:6] = rot2inert(rv, θ, μ, origin=origin)
     return nothing
 end
+function rot2inert!(rv, θ, sys::System; origin=:barycenter)
+    rv[1:6] = rot2inert(rv, θ, sys, origin=origin)
+    return nothing
+end
+
 
 function rot2inert(rv, θ, p::Array; origin=:barycenter)
 # function S2I!(rv,t,p::Array)
@@ -62,6 +68,78 @@ end
 
 function rot2inert!(rv, θ, p::Array; origin=0)
     rv[1:6] = rot2inert(rv, θ, p, origin=origin)
+    return nothing
+end
+
+"""
+    inert2rot(rv,θ,μ)
+Inertial frame to rotating (synodic) frame
+"""
+# function inert2rot!(rv, t, μ; origin="barycenter")
+function inert2rot(rv, t, μ; origin=:barycenter)
+    ct, st = cos(t), sin(t)
+    A =  [ct  st  0;
+         -st  ct  0;
+           0   0  1]
+    # A = rotz(-t)
+    B = [-st  ct  0;
+         -ct -st  0;
+           0   0  0]
+    C = [A zeros(3,3);
+         B A]
+    if origin == :barycenter
+    elseif origin == :prim
+        rv += [-μ, 0, 0, 0, 0, 0]
+    elseif origin == :sec
+        rv += [1-μ, 0, 0, 0, 0, 0]
+    end
+    return C*rv
+end
+inert2rot(rv, t, sys::System; origin=:barycenter) = inert2rot(rv, t, sys.μ, origin=origin)
+
+"""
+    inert2rot!(rv,t)
+Synodic (rotating) frame to inertial frame
+"""
+function inert2rot!(rv, t, μ; origin=:barycenter)
+# function inert2rot!(rv, t)
+    rv[1:6] = inert2rot(rv, t, μ, origin=origin)
+    return nothing
+end
+function inert2rot!(rv, t, sys::System; origin=:barycenter)
+    rv[1:6] = inert2rot(rv, t, sys, origin=origin)
+    return nothing
+end
+
+
+function inert2rot(rv, t, p::Array; origin=:barycenter)
+# function S2I!(rv,t,p::Array)
+    μ₁,μ₂,d = p # parameters
+
+    ωₛ = sqrt((μ₁ + μ₂)/d^3);
+    ct, st = cos(ωₛ*t), sin(ωₛ*t)
+    A = [ct  st  0;
+        -st  ct  0;
+          0   0  1]
+    # A = rotz(ωₛ*t)
+    B = [-st  ct  0;
+         -ct -st  0;
+           0   0  0]
+    C = [A zeros(3,3);
+         B A]
+
+    if origin == :barycenter
+    elseif origin == :prim
+        rv += [-d*μ₂/(μ₁ + μ₂), 0, 0, 0, 0, 0]
+    elseif origin == :sec
+        rv += [d*(1-μ₂/(μ₁ + μ₂)), 0, 0, 0, 0, 0]
+    end
+
+    return C*rv
+end
+
+function inert2rot!(rv, t, p::Array; origin=0)
+    rv[1:6] = inert2rot(rv, t, p, origin=origin)
     return nothing
 end
 

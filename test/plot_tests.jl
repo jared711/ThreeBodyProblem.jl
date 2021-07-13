@@ -10,4 +10,4 @@ x,y,z = sphere(r)
 @test x[1]^2 + y[1]^2 + z[1]^2 == r^2
 
 sys = earth_moon()
-# rec = RecipesBase.apply_recipe(Dict{Symbol, Any}(), SYS)
+# plot(sys)

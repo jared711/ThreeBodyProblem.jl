@@ -1,4 +1,5 @@
 using RecipesBase
+using DifferentialEquations
 
 function circle(r=1,c=[0,0,0];color="blue",label="",npts=100)
     u = range(0,stop=2π,length=npts)
@@ -99,18 +100,46 @@ end
     end
 end
 
-@recipe function f(rv::Vector{Vector{T}} where T<:Real; label="trajectory", color=:black)
+@recipe function f(rv::Vector{Vector{T}} where T<:Real; label="trajectory", color=:black, planar=false)
 
     @series begin
         label := label
         seriescolor := color
-        if length(rv[1]) == 2 || length(rv[1]) == 4
+        if length(rv[1]) == 2 || length(rv[1]) == 4 || planar
             x,y = trajectory(rv)
         elseif length(rv[1]) == 3 || length(rv[1]) == 6
             x,y,z = trajectory(rv)
         end
     end
 end
+
+# @recipe function f(odevec::Vector{ODESolution}; label="trajectory", color=:black)
+#
+#     for i = 1:length(odevec)
+#         @series begin
+#             label := label
+#             seriescolor := color
+#             if length(odevec[i][1]) == 2 || length(odevec[i][1]) == 4
+#                 x,y = trajectory(odevec[i])
+#             elseif length(odevec[i][1]) == 3 || length(odevec[i][1]) == 6
+#                 x,y,z = trajectory(odevec[i])
+#             end
+#         end
+#     end
+# end
+
+# @recipe function f(ode::ODESolution; label="trajectory", color=:black)
+#
+#     @series begin
+#         label := label
+#         seriescolor := color
+#         if length(ode[1]) == 2 || length(ode[1]) == 4
+#             x,y = trajectory(ode)
+#         elseif length(ode[1]) == 3 || length(ode[1]) == 6
+#             x,y,z = trajectory(ode)
+#         end
+#     end
+# end
 
 #
 # function plot_earth(;CR3BP=true,col='b',n=100)
