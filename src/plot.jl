@@ -86,6 +86,31 @@ end
     end
 end
 
+# function plot_Lpts(sys::System)
+#     plot(sys,prim=false,sec=false)
+# end
+#
+# function plot_Lpts!(sys::System)
+#     plot!(sys,prim=false,sec=false)
+# end
+#
+# function plot_prim(sys::System)
+#     plot(sys,Lpts=false,sec=false)
+# end
+#
+# function plot_prim!(sys::System)
+#     plot!(sys,Lpts=false,sec=false)
+# end
+#
+# function plot_sec(sys::System)
+#     plot(sys,Lpts=false,prim=false)
+# end
+#
+# function plot_sec!(sys::System)
+#     plot!(sys,Lpts=false,prim=false)
+# end
+
+
 @recipe function f(body::Body; legend=true, center=[0,0,0], scalar=1)
     legend := legend
     legend := :topleft
@@ -112,6 +137,11 @@ end
         end
     end
 end
+
+# function seczoom()
+#     plot!(xlim=[0.995,1.005],ylim=[-0.005,0.005])
+#     return nothing
+# end
 
 # @recipe function f(odevec::Vector{ODESolution}; label="trajectory", color=:black)
 #

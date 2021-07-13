@@ -132,12 +132,20 @@ export  computeR1R2,
         date2str,
         deserno_sphere,
         deserno_hemisphere,
+        spherical_ring,
         gammaL
 
 
 include("plot.jl")
 export  circle,
         sphere
+        # seczoom,
+        # plot_prim!,
+        # plot_prim,
+        # plot_sec!,
+        # plot_sec,
+        # plot_Lpts!,
+        # plot_Lpts
 
 include("special.jl")
 export  invariant_manifolds,

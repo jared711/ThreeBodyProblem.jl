@@ -1,4 +1,5 @@
 using PolynomialRoots
+using LinearAlgebra
 
 """
      computeR1R2(μ)
@@ -634,6 +635,24 @@ for kk in 1:N_new
 end
 
 return xyz_unitHemisphere, N_new
+end
+
+function spherical_ring(c::Array, r::Array, α; N=100)
+    ϕ = 90 - α
+    λ = LinRange(360/N,360,N)
+    r_ring = [latlon2cart(ϕ,λ[i],norm(r),ang_unit=:deg) for i = 1:N]
+    n = [1,0,0]
+    r = r/norm(r)
+    if r'*n > 0.9
+        n[1:3] = [0,1,0]
+    end
+    p = cross(r,n)
+    p = p/norm(p)
+    q = cross(r,p)
+    q = q/norm(q)
+    A = [p q r]
+    r_ring = [A*r_ring[i] + c for i = 1:N]
+    return r_ring
 end
 
 """
