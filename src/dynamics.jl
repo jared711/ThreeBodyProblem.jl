@@ -310,7 +310,7 @@ Compute change of state vector in normalized Bicircular. w is the concatenation 
 normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
 is the gravitational parameter {NON}.
 """
-function BCPstm(wdot,w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
+function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
     Φ = reshape(w[7:42],6,6)
     x,y,z,vx,vy,vz = rv
