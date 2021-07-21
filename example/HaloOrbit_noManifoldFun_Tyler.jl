@@ -2,34 +2,81 @@ using ThreeBodyProblem
 using DifferentialEquations
 using Plots
 using LinearAlgebra
-# using ForwardDiff
 
-# The first step is to define the system. ThreeBodyProblem.jl has built-in functions for common systems like Sun/Jupiter.
+# Our goal today is to compute a halo orbit in the Sun Earth system
+
+## The first step is to define the system. ThreeBodyProblem.jl has built-in functions for common systems like Sun/Jupiter.
 sys = sun_earth()
+sys.name
 
-## There's even a recipe to plot the system for us!
-plot(sys)
+## If you want to create a custom system, then you would use the following syntax
+sys = System(ThreeBodyProblem.SUN, ThreeBodyProblem.EARTH)
 
-## We can see the Lagrange Points, but where are the Sun and Jupiter? Turns out that the distance between them is so much larger than the radius of either one that it makes it hard to see them on a truly scaled picture. Let's scale the Sun and Jupiter to make them visible.
-plot(sys, scaled = true)
+## Now, we are going to compute our first guess at a Halo Orbit using Richardson's expansion
+### The details are complicated, but if you're curious check out this paper
+#### D. L. Richardson, “Analytic Construction Of Periodic Orbits About The Collinear Points,” Celest. Mech., vol. 22, no. 3, pp. 241–253, 1980, doi: 10.1007/BF01229511.
+Az = 0.001
+Lpt = 2 # Which libration point will I center about
+NS = 1
+npts = 100
+t, rvs, T, Ax = rich3(sys, Az, Lpt, NS, npts)
 
-## That's better! Now let's compute the L1 and L2 Lagrange points of our system
+## Let's plot the orbit to see what it looks like
+plot(rvs[:,1],rvs[:,2],rvs[:,3], label="Richardson")
 
-L1, L2 = computeLpts(sys)
-# Declare state vectors for L1 and L2 (with zero velocity)
-rv1 = [L1; zeros(3)] # state at Lagrange point L1 (zero velocity added on)
+## Remember, this is a third order approximation
+## What will happen if we actually integrate this trajectory?
+tspan = (0., T)
+prob = ODEProblem(CR3BPdynamics!,rvs[1,:],tspan,sys)
+sol = solve(prob, reltol=1e-12)
+plot!(sol,vars=(1,2,3),label="Actual",linecolor=:red)
+
+## We can see that this orbit diverges before completing a period
+## We need to use a differential corrector to hone in on the true periodic orbit
+rv₀, ttf = differential_corrector(sys, rvs[1,:], myconst=3, tf=T)
+
+
+Φ₀ = I(6)
+
+# event function
+condition(u, t, integrator) = u[2]
+affect!(integrator) = terminate!(integrator)
+cb = DifferentialEquations.ContinuousCallback(condition, affect!)
+# sol = solve(prob, Tsit5(), calback=cb)
+
+w₀ = vcat(rv₀, reshape(Φ₀,36,1))
+
+prob = ODEProblem(CR3BPstm!,w₀,(0.0,20.0),sys)
+tol = 1e-12
+sol = solve(prob, reltol=tol, calback=cb)
+plot(sol,vars=(1,2),xlims=[0.98,1.02],ylims=[-0.02,0.02])
+
+w = sol[end]
+rv = w[1:6]
+Φ = reshape(w[7:42],6,6)
+global T = 2*sol.t[end]
+
+
+
+
+## Declare state vectors for L1 and L2 (with zero velocity)
+L2 = computeL2(sys.μ,tol=1e-15)
 rv2 = [L2; zeros(3)] # state at Lagrange point L2
+
+## Declare state vectors for L1 and L2 (with zero velocity)
+L1 = computeL1(sys.μ,tol=1e-15)
+rv1 = [L1; zeros(3)] # state at Lagrange point L1
 
 ## The Lagrange points are equilibrium points in our dynamics. This means that an object placed there perfectly will stay there forever. But, Lagrange points L1, L2, and L3 are unstable, meaning if you perturb the object slightly, it may fall away. This is how we will generate the invariant manifolds.
 ## We first need to linearize the dynamics about these Lagrange points to determine which directions are stable and unstable
 
 Φ₀ = I(6)
-w₀ = vcat(rv1,reshape(Φ₀,36,1))
+w₀ = [reshape(Φ₀,36,1);rv1]
 tspan = (0.,1.)
 prob = ODEProblem(CR3BPstm!,w₀,tspan,sys)
 sol = solve(prob, reltol=1e-6)
-Φₜ = Matrix(reshape(sol.u[end][7:42],6,6))
-rvₜ = sol.u[end][1:6] # last time step should match very closely with rv₁
+Φₜ = Matrix(reshape(sol.u[end][1:36],6,6))
+rvₜ = sol.u[end][37:42] # last time step should match very closely with rv₁
 D,V = eigen(Φₜ,sortby=isreal)
 Yw = real(V[:,findall(isreal, D)])
 D = D[findall(isreal, D)]
@@ -44,6 +91,8 @@ rv1up = rv1 + α*Ywu # unstable manifold + side
 rv1un = rv1 - α*Ywu # unstable manifold - side
 rv1sp = rv1 + α*Yws # stable manifold + side
 rv1sn = rv1 - α*Yws # stable manifold - side
+
+
 
 
 ## Next, we integrate our initial conditions forward in time for the +x and -x directions and backward in time for the +y and -y directions
@@ -110,4 +159,4 @@ plot!(sol2up,vars=(1,2),label="Wu+",linecolor=:red)
 plot!(sol2un,vars=(1,2),label="Wu-",linecolor=:magenta)
 plot!(sol2sp,vars=(1,2),label="Ws+",linecolor=:blue)
 plot!(sol2sn,vars=(1,2),label="Ws-",linecolor=:cyan)
-plot!(aspect_ratio=1,ylims=[-0.04,0.04],xlims=[0.93,1.07],legend=:outerright,flip=false)
+plot!(aspect_ratio=1,ylims=[-0.01,0.01],xlims=[0.975,1.025],legend=:outerright,flip=false)

@@ -2,82 +2,45 @@ using ThreeBodyProblem
 using DifferentialEquations
 using Plots
 using LinearAlgebra
+# using ForwardDiff
 
-# Our goal today is to compute a halo orbit in the Sun Earth system
+# The first step is to define the system. ThreeBodyProblem.jl has built-in functions for common systems like Sun/Jupiter.
+sys = sun_jupiter()
 
-## The first step is to define the system. ThreeBodyProblem.jl has built-in functions for common systems like Sun/Jupiter.
-sys = sun_earth()
-sys.name
+## There's even a recipe to plot the system for us!
+plot(sys)
 
-## If you want to create a custom system, then you would use the following syntax
-sys = System(ThreeBodyProblem.SUN, ThreeBodyProblem.EARTH)
+## We can see the Lagrange Points, but where are the Sun and Jupiter? Turns out that the distance between them is so much larger than the radius of either one that it makes it hard to see them on a truly scaled picture. Let's scale the Sun and Jupiter to make them visible.
+plot(sys, scaled = true)
 
-## Now, we are going to compute our first guess at a Halo Orbit using Richardson's expansion
-### The details are complicated, but if you're curious check out this paper
-#### D. L. Richardson, “Analytic Construction Of Periodic Orbits About The Collinear Points,” Celest. Mech., vol. 22, no. 3, pp. 241–253, 1980, doi: 10.1007/BF01229511.
-Az = 0.001
-Lpt = 2 # Which libration point will I center about
-NS = 1
-npts = 100
-t, rvs, T, Ax = rich3(sys, Az, Lpt, NS, npts)
+## That's better! Now let's compute the L1 and L2 Lagrange points of our system
 
-## Let's plot the orbit to see what it looks like
-plot(rvs[:,1],rvs[:,2],rvs[:,3], label="Richardson")
-
-## Remember, this is a third order approximation
-## What will happen if we actually integrate this trajectory?
-tspan = (0., T)
-prob = ODEProblem(CR3BPdynamics!,rvs[1,:],tspan,sys)
-sol = solve(prob, reltol=1e-12)
-plot!(sol,vars=(1,2,3),label="Actual",linecolor=:red)
-
-## We can see that this orbit diverges before completing a period
-## We need to use a differential corrector to hone in on the true periodic orbit
-myconst = 3
-rv₀, ttf = differential_corrector(sys, rvs[1,:], myconst, tf=T)
-Juno.@enter differential_corrector(sys, rv₀, myconst, tf=10.0) #
-
-Φ₀ = I(6)
-
-# event function
-condition(u, t, integrator) = u[2]
-affect!(integrator) = terminate!(integrator)
-cb = DifferentialEquations.ContinuousCallback(condition, affect!)
-# sol = solve(prob, Tsit5(), calback=cb)
-
-w₀ = vcat(rv₀, reshape(Φ₀,36,1))
-
-prob = ODEProblem(CR3BPstm!,w₀,(0.0,20.0),sys)
-tol = 1e-12
-sol = solve(prob, reltol=tol, calback=cb)
-plot(sol,vars=(1,2),xlims=[0.98,1.02],ylims=[-0.02,0.02])
-
-w = sol[end]
-rv = w[1:6]
-Φ = reshape(w[7:42],6,6)
-global T = 2*sol.t[end]
-
-
-
-
-## Declare state vectors for L1 and L2 (with zero velocity)
+L1, L2 = computeLpts(sys)
+# Declare state vectors for L1 and L2 (with zero velocity)
+rv1 = [L1; zeros(3)] # state at Lagrange point L1 (zero velocity added on)
 rv2 = [L2; zeros(3)] # state at Lagrange point L2
 
 ## The Lagrange points are equilibrium points in our dynamics. This means that an object placed there perfectly will stay there forever. But, Lagrange points L1, L2, and L3 are unstable, meaning if you perturb the object slightly, it may fall away. This is how we will generate the invariant manifolds.
 ## We first need to linearize the dynamics about these Lagrange points to determine which directions are stable and unstable
 
-Φ₀ = I(6)
-w₀ = [reshape(Φ₀,36,1);rv1]
+Φ₀ = I(6) # The initial State Transition Matrix (STM)
+w₀ = vcat(rv1,reshape(Φ₀,36,1)) # Augmented state with state and STM
+# Set up the ODE problem
 tspan = (0.,1.)
 prob = ODEProblem(CR3BPstm!,w₀,tspan,sys)
 sol = solve(prob, reltol=1e-6)
-Φₜ = Matrix(reshape(sol.u[end][1:36],6,6))
-rvₜ = sol.u[end][37:42] # last time step should match very closely with rv₁
-D,V = eigen(Φₜ,sortby=isreal)
-Yw = real(V[:,findall(isreal, D)])
-D = D[findall(isreal, D)]
-Yws = Yw[:,findmin(real(D))[2]]
-Ywu = Yw[:,findmax(real(D))[2]]
+Φₜ = Matrix(reshape(sol.u[end][7:42],6,6))
+
+# last time step should match very closely with rv1
+rvₜ = sol.u[end][1:6]
+err = norm(rv1 - rvₜ)
+
+# Compute the eigenvectors of the Monodromy Matrix
+Λ,V = eigen(Φₜ,sortby=isreal) # Λ is vector of eigenvalues, V is matrix of eigenvectors
+Yw = real(V[:,findall(isreal, Λ)]) # Eigenvectors corresponding to real eigenvalues
+Λ = Λ[findall(isreal, Λ)] # Purely real eigenvalues (have 0.0 imaginary component)
+Yws = Yw[:,findmin(real(Λ))[2]] # Eigenvector associated with stable eigenvalue λ < 1
+Ywu = Yw[:,findmax(real(Λ))[2]] # Eigenvector associated with unstable eigenvalue λ > 1
 
 ## We perturb our states in the stable and unstable directions
 α = 1e-6
@@ -89,9 +52,6 @@ rv1sp = rv1 + α*Yws # stable manifold + side
 rv1sn = rv1 - α*Yws # stable manifold - side
 
 
-
-
-## Next, we integrate our initial conditions forward in time for the +x and -x directions and backward in time for the +y and -y directions
 # Integrate trajectories for 2 Jupiter periods
 tf = 2*2π
 tspan_forward = (0.,tf) # make sure to add decimal points so tspan contains floating point values, not integers
@@ -148,7 +108,6 @@ plot!(sol2un,vars=(1,2),label="Wu-",linecolor=:magenta)
 plot!(sol2sp,vars=(1,2),label="Ws+",linecolor=:blue)
 plot!(sol2sn,vars=(1,2),label="Ws-",linecolor=:cyan)
 plot!(aspect_ratio=1,ylims=[-1.0,1.0],xlims=[-0.3,1.5],legend=:topright,flip=false)
-
 ## This time there are two strands moving out away from the Sun, along with another jumble around Jupiter. Let's zoom in again to take a look.
 plot(sys)
 plot!(sol2up,vars=(1,2),label="Wu+",linecolor=:red)
