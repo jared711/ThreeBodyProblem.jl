@@ -2,24 +2,28 @@
      computeR1R2(μ)
 
 Compute the non-dimensional distances of each body from the barycenter given the mass
-parameter, μ
+parameter `μ` {NON}.
 """
-function computeR1R2(μ::Number)
+function computeR1R2(μ)
     R₁ = -μ
     R₂ = 1-μ
     return R₁, R₂
 end
 
-function computeR1R2(sys::System)
-    return computeR1R2(sys.μ)
-end
+"""
+     computeR1R2(sys::System)
+
+Compute the non-dimensional distances of each body from the barycenter given CR3BP system
+`sys`.
+"""
+computeR1R2(sys::System) = computeR1R2(sys.μ)
 
 """
     computeR1R2(p::Array)
 
-Compute the dimensional distances of each body from the barycenter p = [μ₁,μ₂,d], which are
-the gravitational parameters of the first and second primary bodies [km³/s²]and the distance
-between them [km].
+Compute the dimensional distances of each body from the barycenter given `p = [μ₁,μ₂,d]`
+{km³/s², km³/s², km} which are the gravitational parameters of the first and second primary
+bodies and the distance between them.
 """
 function computeR1R2(p::Array)
     μ₁,μ₂,d = p
@@ -29,10 +33,10 @@ function computeR1R2(p::Array)
 end
 
 """
-    computer1r2(rv,μ)
+    computer1r2(rv, μ)
 
-Compute the non-dimensional distances of each body from the barycenter given the mass
-parameter, μ
+Compute the non-dimensional position vectors of the particle from each body given the state
+vector `rv = [r; v]` {NON; NON} and the mass parameter `μ` {NON}.
 """
 function computer1r2(rv,μ)
     x,y,z = rv[1:3]
@@ -41,16 +45,20 @@ function computer1r2(rv,μ)
     return r₁, r₂
 end
 
-function computer1r2(rv,sys::System)
-    return computer1r2(rv,sys.μ)
-end
+"""
+    computer1r2(rv, sys::System)
+
+Compute the non-dimensional position vectors of the particle from each body given the state
+vector `rv = [r; v]` {NON; NON} and the CR3BP system `sys`.
+"""
+computer1r2(rv,sys::System) = computer1r2(rv,sys.μ)
 
 """
-    computer1r2(rv,p::Array)
+    computer1r2(rv, p::Array)
 
-Compute the dimensional position vector of the object from each body given p = [μ₁,μ₂,d],
-which are the gravitational parameters of the first and second primary bodies [km³/s²]and
-the distance between them [km]
+Compute the dimensional position vectors of the particle from each body given
+`p = [μ₁,μ₂,d]` {km³/s², km³/s², km} which are the gravitational parameters of the first and
+second primary bodies and the distance between them.
 """
 function computer1r2(rv,p::Array)
     x,y,z = rv[1:3]
@@ -60,11 +68,10 @@ function computer1r2(rv,p::Array)
     return r₁, r₂
 end
 
-
 """
-    computeL1(μ;tol=1e-15)
+    computeL1(μ; tol=1e-15)
 
-Compute position vector to L1 in a normalized CR3BP given the mass parameter, μ
+Compute position vector of L1 in a normalized CR3BP given the mass parameter `μ` {NON}.
 """
 function computeL1(μ;tol=1e-15)
     α = (μ/3 * (1 - μ))^(1/3)
@@ -80,15 +87,21 @@ function computeL1(μ;tol=1e-15)
     L1 = [1 - μ - α; 0; 0]
     return L1
 end
+
+"""
+    computeL1(μ; tol=1e-15)
+
+Compute position vector of L1 in a normalized CR3BP given the CR3BP system `sys`.
+"""
 computeL1(sys::System; tol=1e-15) = computeL1(sys.μ, tol=tol)
 
 
 """
     computeL1(p::Array;tol=1e-15)
 
-Compute 3D L1 in a non-normalized CR3BP given p = [μ₁,μ₂,d], which are the
-gravitational parameters of the first and second primary bodies [km³/s²]and the
-distance between them [km].
+Compute position vector of L1 in a non-normalized CR3BP given `p = [μ₁,μ₂,d]`
+{km³/s², km³/s², km} which are the gravitational parameters of the first and second primary
+bodies and the distance between them.
 """
 function computeL1(p::Array;tol=1e-15)
     μ₁,μ₂,d = p
@@ -98,9 +111,9 @@ function computeL1(p::Array;tol=1e-15)
 end
 
 """
-    computeL2(μ;tol=1e-15)
+    computeL2(μ; tol=1e-15)
 
-Compute 3D L2 in a normalized CR3BP given μ, the system mass parameter.
+Compute position vector of L2 in a normalized CR3BP given the mass parameter `μ` {NON}.
 """
 function computeL2(μ;tol=1e-15)
     β = (μ/3 * (1 - μ))^(1/3)
@@ -136,7 +149,7 @@ end
 """
     computeL3(μ;tol=1e-15)
 
-Compute 3D L3 in a normalized CR3BP given μ, the system mass parameter.
+Compute position vector of L3 in a normalized CR3BP given the mass parameter `μ` {NON}.
 """
 function computeL3(μ;tol=1e-15)
     γ = -7*μ/12 + 1
@@ -171,12 +184,13 @@ function computeL3(p::Array;tol=1e-15)
 end
 
 """
-    computeL4(μ;tol=1e-15)
+    computeL4(μ; tol=1e-15)
 
-ComputeL4 3D L4 in a normalized CR3BP given μ, the system mass parameter.
+Compute position vector of L4 in a normalized CR3BP given the mass parameter `μ` {NON}.
 """
 computeL4(μ;tol=1e-15) = [0.5-μ; √3/2; 0]
 computeL4(sys::System; tol=1e-15) = computeL4(sys.μ, tol=tol)
+
 """
     computeL4(p::Array;tol=1e-15)
 
@@ -194,7 +208,7 @@ end
 """
     computeL5(μ;tol=1e-15)
 
-Compute 3D L5 in a normalized CR3BP given μ, the system mass parameter.
+Compute position vector of L5 in a normalized CR3BP given the mass parameter `μ` {NON}.
 """
 computeL5(μ;tol=1e-15) = [0.5-μ; -√3/2; 0]
 computeL5(sys::System; tol=1e-15) = computeL5(sys.μ, tol=tol)
@@ -252,7 +266,7 @@ end
 """
     computeUeff(rv,μ)
 
-Compute effective potential given normalized state rv {NON} and mass parameter {NON}
+Compute effective potential given normalized state `rv` {NON} and mass parameter `μ` {NON}.
 """
 function computeUeff(rv,μ)
     x,y,z = rv[1:3]
@@ -260,14 +274,20 @@ function computeUeff(rv,μ)
     Ueff = -(x^2 + y^2)/2 - (1-μ)/r₁ - μ/r₂;
     return Ueff
 end
+
+"""
+    computeUeff(rv,sys::System)
+
+Compute effective potential given state `rv = [r; v]`` {km; km/s} and CR3BP system `sys`.
+"""
 computeUeff(rv,sys::System) = computeUeff(rv,sys.μ)
 
 """
     computeUeff(rv,p::Array)
 
-Compute effective potential given state rv = [r; v] {km; km/s} and p = [μ₁,μ₂,d],
-which are the gravitational parameters of the first and second primary bodies
-[km³/s²] and the distance between them [km].
+Compute effective potential given state `rv = [r; v]`` {km; km/s} and `p = [μ₁,μ₂,d]`
+{km³/s²; km³/s²; km}, which are the gravitational parameters of the first and second primary
+bodies and the distance between them.
 """
 function computeUeff(rv,p::Array)
     x,y,z = rv[1:3]
