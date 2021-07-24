@@ -59,8 +59,16 @@ struct System
     VUNIT::Float64  # {km/s} velocity normalizing parameter
     AUNIT::Float64  # {km^2/s} acceleration normalizing parameter
     name::String    # name of system (e.g. "Earth/Moon")
+
+    # Added these since it is unwise to require unicode operators from the user
+    mu1::Float64     # {km^3/s^2} gravitational parameter of primary body
+    mu2::Float64     # {km^3/s^2} gravitational parameter of secondary body
+    mu::Float64      # {} mass parameter
+    R1::Float64     # {km} Radius of primary Body
+    R2::Float64     # {km} Radius of Secondary Body
 end
-System(prim::Body, sec::Body) = System(prim, sec, prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), sec.a, prim.R, sec.R, sec.T, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name))
+System(prim::Body, sec::Body) = System(prim, sec, prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), sec.a, prim.R, sec.R, sec.T, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name),
+                                                  prim.m*G, sec.m*G, sec.m/(prim.m+sec.m),        prim.R, sec.R)
 
 """
     BicircularSystem(prim, sec, μ₁, μ₂, μ, d, R₁, R₂, T, RUNIT, VUNIT, TUNIT, name)
@@ -88,17 +96,17 @@ struct BicircularSystem
     prim::Body      # Primary body
     sec::Body       # Secondary body
     ter::Body       # Tertiary body
-    μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
-    μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
-    μ₃::Float64     # {km^3/s^2} gravitational parameter of tertiary body
-    μ::Float64      # {} mass parameter, μ₂/(μ₁+μ₂)
-    m₃::Float64     # {} normalized mass of tertiary body
+    mu1::Float64     # {km^3/s^2} gravitational parameter of primary body
+    mu2::Float64     # {km^3/s^2} gravitational parameter of secondary body
+    mu3::Float64     # {km^3/s^2} gravitational parameter of tertiary body
+    mu::Float64      # {} mass parameter, μ₂/(μ₁+μ₂)
+    m3::Float64     # {} normalized mass of tertiary body
     d::Float64      # {km} average distance between two primaries
-    R₁::Float64     # {km} Radius of primary Body
-    R₂::Float64     # {km} Radius of Secondary Body
-    R₃::Float64     # {km} Radius of tertiary body
+    R1::Float64     # {km} Radius of primary Body
+    R2::Float64     # {km} Radius of Secondary Body
+    R3::Float64     # {km} Radius of tertiary body
     T::Float64      # {s} sidereal orbital period of prim and sec about each other
-    n₃::Float64     # {} normalized mean motion of tertiary body
+    n3::Float64     # {} normalized mean motion of tertiary body
     RUNIT::Float64  # {km} distance normalizing parameter
     TUNIT::Float64  # {s} time normalizing parameter
     VUNIT::Float64  # {km/s} velocity normalizing parameter
