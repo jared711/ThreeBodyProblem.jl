@@ -8,22 +8,23 @@ Pages = ["frames.md"]
 ```
 
 ## Overview
-We are constantly changing between reference frames when dealing with orbital mechanics
+The most important frame conversion when dealing with the Circular Restricted Three-Body Problem (CR3BP) is between the rotating and inertial frames.
 
 ## Functions
 
 ```@docs
 rot2inert
+rot2inert!
+inert2rot
+inert2rot!
 enu2ecef
 ecef2enu
 ecef2eci
 eci2ecef
 eci2sci
 sci2eci
-eci2CR3BP
-CR3BP2eci
-CR3BP2cart
-sci2CR3BP
-CR3BP2sci
-
+dimensionalize,
+dimensionalize!,
+nondimensionalize,
+nondimensionalize!
 ```

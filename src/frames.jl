@@ -2,10 +2,11 @@
 # furnsh("src/kernels/naif0012.tls")
 
 """
-    rot2inert(rv,θ,μ)
-Rotating (synodic) frame to inertial frame
+    rot2inert(rv, θ, μ; origin=:barycenter)
+
+Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to inertial
+frame in the normalized CR3BP given time `θ` {NON} and mass parameter `μ` {NON}.
 """
-# function rot2inert!(rv, θ, μ; origin="barycenter")
 function rot2inert(rv, θ, μ; origin=:barycenter)
     if origin == :barycenter
     elseif origin == :prim
@@ -24,25 +25,24 @@ function rot2inert(rv, θ, μ; origin=:barycenter)
          B A]
     return C*rv
 end
+
+"""
+    rot2inert(rv, θ, sys::System; origin=:barycenter)
+
+Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to inertial
+frame in the normalized CR3BP given time `θ` {NON} and CR3BP system `sys`.
+"""
 rot2inert(rv, θ, sys::System; origin=:barycenter) = rot2inert(rv, θ, sys.μ, origin=origin)
 
 """
-    rot2inert!(rv,θ,μ)
-Synodic (rotating) frame to inertial frame
+    rot2inert(rv, θ, p::Array; origin=:barycenter)
+
+Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to inertial
+frame in the non-normalized CR3BP given time `θ` {NON} and p = [μ₁;μ₂;d]`
+{km³/s²; km³/s²; km}, which contains the gravitational parameters of the first and second
+primary bodies as well as the distance between them.
 """
-function rot2inert!(rv, θ, μ; origin=:barycenter)
-# function rot2inert!(rv, θ)
-    rv[1:6] = rot2inert(rv, θ, μ, origin=origin)
-    return nothing
-end
-function rot2inert!(rv, θ, sys::System; origin=:barycenter)
-    rv[1:6] = rot2inert(rv, θ, sys, origin=origin)
-    return nothing
-end
-
-
 function rot2inert(rv, θ, p::Array; origin=:barycenter)
-# function S2I!(rv,t,p::Array)
     μ₁,μ₂,d = p # parameters
 
     if origin == :barycenter
@@ -65,16 +65,41 @@ function rot2inert(rv, θ, p::Array; origin=:barycenter)
     return C*rv
 end
 
+"""
+    rot2inert!(rv, θ, μ)
+
+In-place version of rot2inert(rv, θ, μ)
+"""
+function rot2inert!(rv, θ, μ; origin=:barycenter)
+    rv[1:6] = rot2inert(rv, θ, μ, origin=origin)
+    return nothing
+end
+
+"""
+    rot2inert!(rv, θ, sys::System)
+
+In-place version of rot2inert(rv, θ, sys::System)
+"""
+function rot2inert!(rv, θ, sys::System; origin=:barycenter)
+    rv[1:6] = rot2inert(rv, θ, sys, origin=origin)
+    return nothing
+end
+
+"""
+    rot2inert!(rv, θ, p::Array)
+
+In-place version of rot2inert(rv, θ, p::Array)
+"""
 function rot2inert!(rv, θ, p::Array; origin=0)
     rv[1:6] = rot2inert(rv, θ, p, origin=origin)
     return nothing
 end
 
 """
-    inert2rot(rv,θ,μ)
+    inert2rot(rv, θ, μ)
+
 Inertial frame to rotating (synodic) frame
 """
-# function inert2rot!(rv, t, μ; origin="barycenter")
 function inert2rot(rv, t, μ; origin=:barycenter)
     ct, st = cos(t), sin(t)
     A =  [ct  st  0;
@@ -94,23 +119,19 @@ function inert2rot(rv, t, μ; origin=:barycenter)
     end
     return C*rv
 end
+
+"""
+    inert2rot(rv, θ, sys::System)
+
+Inertial frame to rotating (synodic) frame
+"""
 inert2rot(rv, t, sys::System; origin=:barycenter) = inert2rot(rv, t, sys.μ, origin=origin)
 
 """
-    inert2rot!(rv,t)
-Synodic (rotating) frame to inertial frame
+    inert2rot(rv, θ, p::Array)
+
+Inertial frame to rotating (synodic) frame
 """
-function inert2rot!(rv, t, μ; origin=:barycenter)
-# function inert2rot!(rv, t)
-    rv[1:6] = inert2rot(rv, t, μ, origin=origin)
-    return nothing
-end
-function inert2rot!(rv, t, sys::System; origin=:barycenter)
-    rv[1:6] = inert2rot(rv, t, sys, origin=origin)
-    return nothing
-end
-
-
 function inert2rot(rv, t, p::Array; origin=:barycenter)
 # function S2I!(rv,t,p::Array)
     μ₁,μ₂,d = p # parameters
@@ -137,6 +158,32 @@ function inert2rot(rv, t, p::Array; origin=:barycenter)
     return C*rv
 end
 
+"""
+    inert2rot!(rv, t, μ)
+
+In-place version of `inert2rot(rv, t, μ)`.
+"""
+function inert2rot!(rv, t, μ; origin=:barycenter)
+    # function inert2rot!(rv, t)
+    rv[1:6] = inert2rot(rv, t, μ, origin=origin)
+    return nothing
+end
+
+"""
+    inert2rot!(rv, t, sys::System)
+
+In-place version of `inert2rot(rv, t, sys::System)`.
+"""
+function inert2rot!(rv, t, sys::System; origin=:barycenter)
+    rv[1:6] = inert2rot(rv, t, sys, origin=origin)
+    return nothing
+end
+
+"""
+    inert2rot!(rv, t, p::Array)
+
+In-place version of `inert2rot(rv, t, p::Array)`.
+"""
 function inert2rot!(rv, t, p::Array; origin=0)
     rv[1:6] = inert2rot(rv, t, p, origin=origin)
     return nothing
@@ -144,6 +191,10 @@ end
 
 
 """
+    ecef2eci(rv_ecef, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
+
+Convert state vector `rv = [r; v]` {km; km/s} from Earth-Centered Earth-Fixed (ECEF) frame
+to Earth-Centered Inertial (ECI) frame given Greenwich Mean Sidereal Time (GMST) `θ` {rad}.
 """
 function ecef2eci(rv_ecef, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
     if ang_unit == :deg
@@ -166,7 +217,10 @@ function ecef2eci(rv_ecef, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
 end
 
 """
-ω=7.292115373194e-5, rad/s Earth rotation rate
+    ecef2eci(rv_ecef, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
+
+Convert state vector `rv = [r; v]` {km; km/s} from Earth-Centered Inertial (ECI) frame to
+Earth-Centered Earth-Fixed (ECEF) frame given Greenwich Mean Sidereal Time (GMST) `θ` {rad}.
 """
 function eci2ecef(rv_eci, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
     if ang_unit == :deg
@@ -317,19 +371,39 @@ end
 function CR3BP2sci()
 end
 
+"""
+    dimensionalize(rv, sys::System)
+
+Add dimensions to normalized state vector `rv`
+"""
 function dimensionalize(rv, sys::System)
     return vcat(rv[1:3]*sys.RUNIT, rv[4:6]*sys.VUNIT)
 end
 
+"""
+    dimensionalize!(rv, sys::System)
+
+In-place version of dimensionalize(rv, sys::System)
+"""
 function dimensionalize!(rv, sys::System)
     rv[1:6] = dimensionalize(rv,sys)
     return nothing
 end
 
+"""
+    nondimensionalize(rv, sys::System)
+
+Normalize state vector `rv`
+"""
 function nondimensionalize(rv, sys::System)
     return vcat(rv[1:3]/sys.RUNIT, rv[4:6]/sys.VUNIT)
 end
 
+"""
+    nondimensionalize!(rv, sys::System)
+
+In-place version of nondimensionalize(rv, sys::System)
+"""
 function nondimensionalize!(rv, sys::System)
     rv[1:6] = nondimensionalize(rv,sys)
     return nothing
