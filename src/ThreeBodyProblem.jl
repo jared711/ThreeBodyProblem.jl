@@ -1,6 +1,12 @@
 # This is the module file
 module ThreeBodyProblem
 
+using OrdinaryDiffEq
+using LinearAlgebra
+using PolynomialRoots
+using RecipesBase
+using SPICE
+
 include("constants.jl")
 export JD, JY, AU, G
 

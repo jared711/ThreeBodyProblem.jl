@@ -1,5 +1,4 @@
-using RecipesBase
-using DifferentialEquations
+
 
 function circle(r=1,c=[0,0,0];color="blue",label="",npts=100)
     u = range(0,stop=2π,length=npts)

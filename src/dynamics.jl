@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 """
 R2BPdynamics(rv,μ,t)
 
@@ -350,7 +348,7 @@ function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
 end
 
 function BCPstm(w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
-    return BCPstm(w, sys.μ, sys.m₃, sys.n₃ ,t)
+    return BCPstm(w, sys.mu, sys.m3, sys.n3 ,t)
 end
 
 function BCPstm!(wdot,w,μ,m₃,n₃,t) #Three body dynamics in Earth/Moon System

@@ -1,6 +1,4 @@
-using DifferentialEquations
-using LinearAlgebra
-using PolynomialRoots
+
 
 """
     invariantManifolds(SYS, rv0, T; tf=1., nPts=20, α=1e-6, reltol=1e-12, integrator=TsitPap8())

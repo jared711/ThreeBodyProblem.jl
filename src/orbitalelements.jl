@@ -1,5 +1,3 @@
-using LinearAlgebra
-
 """
     AP2a(rA, rP)
 

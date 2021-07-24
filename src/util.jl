@@ -1,6 +1,3 @@
-using PolynomialRoots
-using LinearAlgebra
-
 """
      computeR1R2(μ)
 
@@ -636,7 +633,9 @@ end
 
 return xyz_unitHemisphere, N_new
 end
-
+"""
+    Generates a ring of N vectors with origin c offset by α degrees about central vector r
+"""
 function spherical_ring(c::Array, r::Array, α; N=100)
     ϕ = 90 - α
     λ = LinRange(360/N,360,N)
