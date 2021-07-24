@@ -1,8 +1,9 @@
 """
-R2BPdynamics(rv,μ,t)
+    R2BPdynamics(rv, μ, t)
 
-Compute change of state vector in restricted two-body system. rv is the state in
-{km} and μ is the gravitational parameter in {km³/s²}
+Compute time derivative of state vector in the restricted two-body system. `rv` is the state
+vector `[r; v]` {km; km/s}, `μ` is the gravitational parameter {km³/s²}, and `t` is time
+{s}.
 """
 function R2BPdynamics(rv, μ, t)  #make sure rv and μ are in km and km³/s²
     r,v = rv[1:3], rv[4:6]
@@ -13,10 +14,10 @@ function R2BPdynamics(rv, μ, t)  #make sure rv and μ are in km and km³/s²
 end
 
 """
-    R2BPdynamics(rv,prim::Body,t)
+    R2BPdynamics(rv, prim::Body, t)
 
-Compute change of state vector in restricted two-body system. rv is the state in
-{km} and μ is the gravitational parameter in {km³/s²}
+Compute time derivative of state vector in the restricted two-body system. `rv` is the state
+vector `[r; v]` {km; km/s}, `prim` is the central body, and `t` is time {s}.
 """
 function R2BPdynamics(rv, prim::Body, t)  #make sure rv and μ are in km and km³/s²
     return R2BPdynamics(rv, G*prim.m, t)
@@ -24,10 +25,9 @@ end
 
 
 """
-R2BPdynamics!(rvdot,rv,μ,t)
+    R2BPdynamics!(rvdot, rv, μ, t)
 
-Compute change of state vector in restricted two-body system. rv is the state in
-{km} and μ is the gravitational parameter in {km³/s²}
+In-place version of `R2BPdynamics(rvdot, rv, μ, t)`.
 """
 function R2BPdynamics!(rvdot, rv, μ, t)  #make sure rv and μ are in km and km³/s²
     rvdot[:] = R2BPdynamics(rv,μ,t)
@@ -35,10 +35,9 @@ function R2BPdynamics!(rvdot, rv, μ, t)  #make sure rv and μ are in km and km�
 end
 
 """
-    R2BPdynamics!(rvdot,rv,prim::Body,t)
+    R2BPdynamics!(rvdot, rv, prim::Body, t)
 
-Compute change of state vector in restricted two-body system. rv is the state in
-{km} and μ is the gravitational parameter in {km³/s²}
+In-place version of `R2BPdynamics!(rvdot, rv, prim::Body, t)`.
 """
 function R2BPdynamics!(rvdot, rv, prim::Body, t)  #make sure rv and μ are in km and km³/s²
     rvdot[:] = R2BPdynamics(rv, prim, t)
@@ -46,12 +45,11 @@ function R2BPdynamics!(rvdot, rv, prim::Body, t)  #make sure rv and μ are in km
 end
 
 """
-CR3BPdynamics(rv,p::Array,t)
+    CR3BPdynamics(rv, μ, t)
 
-Compute change of state vector in non-normalized restricted three-body system.
-rv is the state [r; v] {km; km/s} and p = [μ₁;μ₂;d] {km³/s²; km³/s²; km}
-contains the gravitational parameters of the first and second primary bodies and
-the distance between them.
+Compute time derivative of state vector `rv = [r; v]` {NON, NON} in the rotating frame of
+the normalized CR3BP where `μ` is the CR3BP mass parameter μ₂/(μ₁+μ₂) {NON} and `t` is time
+{NON}.
 """
 function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
@@ -66,10 +64,24 @@ function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
     return rvdot
 end
 
+"""
+    CR3BPdynamics(rv, sys::System, t)
+
+Compute time derivative of state vector `rv = [r; v]` {NON, NON} in the rotating frame of
+the normalized CR3BP where `sys` is the CR3BP system and `t` is time {NON}.
+"""
 function CR3BPdynamics(rv,sys::System,t) #Three body dynamics in Earth/Moon System
     return CR3BPdynamics(rv,sys.μ,t)
 end
 
+"""
+    CR3BPdynamics(rv, p::Array, t)
+
+Compute time derivative of state vector `rv = [r; v]` {km, km/s} in the rotating frame of
+the non-normalized CR3BP where `p = [μ₁;μ₂;d]` {km³/s²; km³/s²; km} contains the
+gravitational parameters of the first and second primary bodies as well as the distance
+between them. `t` is time {s}.
+"""
 function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
@@ -88,35 +100,41 @@ function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
 end
 
 """
-CR3BPdynamics!(rvdot,rv,p::Array,t)
+    CR3BPdynamics!(rvdot, rv, μ, t)
 
-Compute change of state vector in non-normalized restricted three-body system.
-rv is the state [r; v] {km; km/s} and p = [μ₁;μ₂;d] {km³/s²; km³/s²; km}
-contains the gravitational parameters of the first and second primary bodies and
-the distance between them.
+In-place version of `CR3BPdynamics(rv, μ, t)`.
 """
 function CR3BPdynamics!(rvdot,rv,μ,t) #Three body dynamics in Earth/Moon System
     rvdot[:] = CR3BPdynamics(rv,μ,t)
     return nothing
 end
 
+"""
+    CR3BPdynamics!(rvdot, rv, sys::System, t)
+
+In-place version of `CR3BPdynamics(rv, sys::System, t)`.
+"""
 function CR3BPdynamics!(rvdot,rv,sys::System,t) #Three body dynamics in Earth/Moon System
     rvdot[:] = CR3BPdynamics(rv,sys,t)
     return nothing
 end
 
+"""
+    CR3BPdynamics!(rvdot, rv, p::Array, t)
+
+In-place version of `CR3BPdynamics(rv, p::Array, t)`.
+"""
 function CR3BPdynamics!(rvdot,rv,p::Array,t) #Three body dynamics in Earth/Moon System
     rvdot[:] = CR3BPdynamics(rv,p,t)
     return nothing
 end
 
-
 """
-    CR3BPstm(w,μ,t)
+    CR3BPstm(w, μ, t)
 
-Compute change of state vector in normalized CR3BP. w is the concatenation of rv, the
-normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
-is the gravitational parameter {NON}.
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the rotating
+frame of the normalized CR3BP. `vec(Φ)` is the vectorized state transition matrix while `μ`
+is the CR3BP mass parameter μ₂/(μ₁+μ₂) {NON} and `t` is time {NON}.
 """
 function CR3BPstm(w,μ,t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
@@ -150,22 +168,43 @@ function CR3BPstm(w,μ,t) #Three body dynamics in Earth/Moon System
     return wdot
 end
 
+"""
+    CR3BPstm(w, sys, t)
+
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the rotating
+frame of the normalized CR3BP. `vec(Φ)` is the vectorized state transition matrix while
+`sys` is the CR3BP system and `t` is time {NON}.
+"""
 function CR3BPstm(w,sys::System,t)
     return CR3BPstm(w,sys.μ,t)
 end
 
+"""
+    CR3BPstm!(wdot, w, μ, t)
+
+In-place version of `CR3BPstm(w, μ, t)`.
+"""
 function CR3BPstm!(wdot,w,μ,t)
     wdot[:] = CR3BPstm(w,μ,t)
     return nothing
 end
 
+"""
+    CR3BPstm!(wdot, w, sys::System, t)
+
+In-place version of `CR3BPstm(w, sys::System, t)`.
+"""
 function CR3BPstm!(wdot,w,sys::System,t) #Three body dynamics in Earth/Moon System
     wdot[:] = CR3BPstm(w,sys,t)
     return nothing
 end
 
 """
-    CR3BPinert(rvdot,rv,μ,t)
+    CR3BPinert(rv,μ,t)
+
+Compute time derivative of state vector `rv = [r; v]` {NON, NON} in the inertial frame of
+the normalized CR3BP where `μ` is the CR3BP mass parameter μ₂/(μ₁+μ₂) {NON} and `t` is time
+{NON}.
 """
 function CR3BPinert(rv,μ,t)
     x,y,z,vx,vy,vz = rv
@@ -180,14 +219,22 @@ function CR3BPinert(rv,μ,t)
 end
 
 """
-    CR3BPinert(rvdot,rv,sys::System,t)
+    CR3BPinert(rv, sys::System, t)
+
+Compute time derivative of state vector `rv = [r; v]` {NON, NON} in the inertial frame of
+the normalized CR3BP where `sys` is the CR3BP system and `t` is time {NON}.
 """
 function CR3BPinert(rv,sys::System,t)
     return CR3BPinert(rv,sys.μ,t)
 end
 
 """
-CR3BPinert(rvdot,rv,p::Array,t)
+    CR3BPinert(rvdot, rv, p::Array, t)
+
+Compute time derivative of state vector `rv = [r; v]` {NON, NON} in the inertial frame of
+the non-normalized CR3BP where `p = [μ₁;μ₂;d]` {km³/s²; km³/s²; km} contains the
+gravitational parameters of the first and second primary bodies as well as the distance
+between them. `t` is time {s}.
 """
 function CR3BPinert(rv,p::Array,t)
     x,y,z,vx,vy,vz = rv
@@ -205,7 +252,9 @@ function CR3BPinert(rv,p::Array,t)
 end
 
 """
-CR3BPinert!(rvdot,rv,μ,t)
+    CR3BPinert!(rvdot, rv, μ, t)
+
+In-place version of `CR3BPinert(rv, μ, t)`.
 """
 function CR3BPinert!(rvdot,rv,μ,t)
     rvdot[:] = CR3BPinert(rv,μ,t)
@@ -213,7 +262,9 @@ function CR3BPinert!(rvdot,rv,μ,t)
 end
 
 """
-    CR3BPinert!(rvdot,rv,sys::System,t)
+    CR3BPinert!(rvdot, rv, sys::System, t)
+
+In-place version of `CR3BPinert(rv, sys::System, t)`.
 """
 function CR3BPinert!(rvdot,rv,sys::System,t)
     rvdot[:] = CR3BPinert(rv,sys,t)
@@ -221,7 +272,9 @@ function CR3BPinert!(rvdot,rv,sys::System,t)
 end
 
 """
-    CR3BPinert!(rvdot,rv,p::Array,t)
+    CR3BPinert!(rvdot, rv, p::Array, t)
+
+In-place version of `CR3BPinert(rv, p::Array, t)`.
 """
 function CR3BPinert!(rvdot,rv,p::Array,t)
     rvdot[:] = CR3BPinert(rv,p,t)
@@ -229,11 +282,10 @@ function CR3BPinert!(rvdot,rv,p::Array,t)
 end
 
 """
-    CWdynamics!(rvdot,rv,n,t)
+    CWdynamics(rv, n, t)
 
-Clohessy-Wiltshire equations
-
-Inputs: n (scalar) mean motion
+Clohessy-Wiltshire equations. Compute time derivative of state vector `rv = [δr; δv]`
+{km; km/s} where `n` {rad/s} is the mean motion of the chief and `t` is time {s}.
 """
 function CWdynamics(rv,n,t)
     x,y,z,vx,vy,vz = rv
@@ -259,8 +311,14 @@ end
 
 
 """
-    bicircular problem dynamics
-    See G. Gómez, C. Simó, J. Llibre, and R. Martínez, Dynamics and mission design near libration points. Vol. II, vol. 3. 2001.
+See G. Gómez, C. Simó, J. Llibre, and R. Martínez, Dynamics and mission design near
+libration points. Vol. II, vol. 3. 2001.
+
+    BCPdynamics(rv, μ, m₃, n₃, t)
+
+Compute time derivative of state vector `rv = [r; v]` {km; km/s} in the normalized
+Bicircular Four-Body Problem (BCP). `μ` {NON} is the BCP mass parameter and `m₃` {NON} and
+`n₃` {NON} are the normalized mass and mean motion of the tertiary body. `t` is time {NON}.
 """
 function BCPdynamics(rv, μ, m₃, n₃, t)
     x,y,z,vx,vy,vz = rv
@@ -274,27 +332,43 @@ function BCPdynamics(rv, μ, m₃, n₃, t)
     x₃ =  a₃*cos(θ)
     y₃ = -a₃*sin(θ)
 
-    r₁³ = (  (x+μ)^2 +      y^2 + z^2)^1.5; # distance to m1, LARGER MASS
-    r₂³ = ((x-1+μ)^2 +      y^2 + z^2)^1.5; # distance to m2, smaller mass
-    r₃³ = ( (x-x₃)^2 + (y-y₃)^2 + z^2)^1.5;
+    r₁³ = (  (x+μ)^2 +      y^2 + z^2)^1.5 # distance to m1, LARGER MASS
+    r₂³ = ((x-1+μ)^2 +      y^2 + z^2)^1.5 # distance to m2, smaller mass
+    r₃³ = ( (x-x₃)^2 + (y-y₃)^2 + z^2)^1.5
 
     rvdot = zeros(6)
     rvdot[1:3] = [vx;vy;vz]
-    rvdot[4] = -(1-μ)*(x+μ)/r₁³ - μ*(x-1+μ)/r₂³ - m₃*(x-x₃)/r₃³ - m₃*cos(θ)/a₃^2 + 2*vy + x;
-    rvdot[5] = -(1-μ)  *  y/r₁³ - μ   *   y/r₂³ - m₃*(y-y₃)/r₃³ + m₃*sin(θ)/a₃^2 - 2*vx + y;
-    rvdot[6] = -(1-μ)  *  z/r₁³ - μ   *   z/r₂³ - m₃  *   z/r₃³;
+    rvdot[4] = -(1-μ)*(x+μ)/r₁³ - μ*(x-1+μ)/r₂³ - m₃*(x-x₃)/r₃³ - m₃*cos(θ)/a₃^2 + 2*vy + x
+    rvdot[5] = -(1-μ)  *  y/r₁³ - μ   *   y/r₂³ - m₃*(y-y₃)/r₃³ + m₃*sin(θ)/a₃^2 - 2*vx + y
+    rvdot[6] = -(1-μ)  *  z/r₁³ - μ   *   z/r₂³ - m₃  *   z/r₃³
     return rvdot
 end
 
+"""
+    BCPdynamics(rv, sys::BicircularSystem, t)
+
+Compute time derivative of state vector `rv = [r; v]` {km; km/s} in the normalized
+Bicircular Four-Body Problem (BCP). `sys` is the BCP system and `t` is time {NON}.
+"""
 function BCPdynamics(rv, sys::BicircularSystem, t)
     return BCPdynamics(rv, sys.μ, sys.m₃, sys.n₃, t)
 end
 
+"""
+    BCPdynamics!(rvdot, rv, μ, m₃, n₃, t)
+
+In-place version of `BCPdynamics(rv, μ, m₃, n₃, t)`.
+"""
 function BCPdynamics!(rvdot, rv, μ, m₃, n₃, t)
     rvdot[:] = BCPdynamics(rv, μ, m₃, n₃, t)
     return nothing
 end
 
+"""
+    BCPdynamics!(rvdot, rv, sys::BicircularSystem, t)
+
+In-place version of `BCPdynamics(rv, sys::BicircularSystem, t)`.
+"""
 function BCPdynamics!(rvdot, rv, sys::BicircularSystem, t)
     rvdot[:] = BCPdynamics(rv, sys, t)
     return nothing
@@ -304,9 +378,10 @@ end
 """
     BCPstm(wdot, w, μ, m₃, n₃, t)
 
-Compute change of state vector in normalized Bicircular. w is the concatenation of rv, the
-normalized state {NON}, and vec(Φ), the vectorized state transition matrix {NON}, while μ
-is the gravitational parameter {NON}.
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
+normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
+matrix. `μ` {NON} is the BCP mass parameter and `m₃` {NON} and `n₃` {NON} are the normalized
+mass and mean motion of the tertiary body. `t` is time {NON}.
 """
 function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
@@ -347,15 +422,32 @@ function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
     return wdot
 end
 
+"""
+    BCPstm(wdot, w, μ, m₃, n₃, t)
+
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
+normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
+matrix, `sys` is the BCP system and `t` is time {NON}.
+"""
 function BCPstm(w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
     return BCPstm(w, sys.mu, sys.m3, sys.n3 ,t)
 end
 
+"""
+    BCPstm!(wdot, w, μ, m₃, n₃, t)
+
+In-place version of `BCPstm(w, μ, m₃, n₃, t)`.
+"""
 function BCPstm!(wdot,w,μ,m₃,n₃,t) #Three body dynamics in Earth/Moon System
     wdot[:] = BCPstm(w,μ,m₃,n₃,t)
     return nothing
 end
 
+"""
+    BCPstm!(wdot, w, sys::BicircularSystem, t)
+
+In-place version of `BCPstm(w, sys::BicircularSystem, t)`.
+"""
 function BCPstm!(wdot,w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
     wdot[:] = BCPstm(w,sys,t)
     return nothing

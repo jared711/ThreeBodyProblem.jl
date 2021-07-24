@@ -197,7 +197,7 @@ end
 """
     E2nu(E, e; ang_unit::Symbol=:deg)
 
-Convert eccentric anomaly to true anomaly given orbit eccentricity, e.
+Convert eccentric anomaly E to true anomaly ν (\nu) given orbit eccentricity, e.
 
 See also: [`nu2E`](@ref), [`M2E`](@ref), [`E2M`](@ref)
 
