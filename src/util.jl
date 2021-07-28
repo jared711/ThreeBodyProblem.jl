@@ -242,6 +242,7 @@ function computeLpts(μ; tol=1e-15)
         ]
     return Lpts
 end
+
 """
     computeLpts(sys::System;tol=1e-15)
 
@@ -310,6 +311,7 @@ function computeC(rv,μ)
     C = -2*Ueff - v^2
     return C
 end
+
 """
     computeC(rv,sys::System)
 

@@ -96,11 +96,12 @@ struct BicircularSystem
     prim::Body      # Primary body
     sec::Body       # Secondary body
     ter::Body       # Tertiary body
-    mu1::Float64     # {km^3/s^2} gravitational parameter of primary body
-    mu2::Float64     # {km^3/s^2} gravitational parameter of secondary body
-    mu3::Float64     # {km^3/s^2} gravitational parameter of tertiary body
-    mu::Float64      # {} mass parameter, μ₂/(μ₁+μ₂)
+    mu1::Float64    # {km^3/s^2} gravitational parameter of primary body
+    mu2::Float64    # {km^3/s^2} gravitational parameter of secondary body
+    mu3::Float64    # {km^3/s^2} gravitational parameter of tertiary body
+    mu::Float64     # {} mass parameter, μ₂/(μ₁+μ₂)
     m3::Float64     # {} normalized mass of tertiary body
+    n3::Float64     # {} normalized mean motion of tertiary body
     μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
     μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
     μ₃::Float64     # {km^3/s^2} gravitational parameter of tertiary body

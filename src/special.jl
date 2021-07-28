@@ -11,7 +11,7 @@ function invariant_manifolds(sys::System, rv₀, T; tf=1., nPts=20, α=1e-6, rel
     w₀ = vcat(rv₀,reshape(Φ₀,36,1))
     tspan = (0.,T)
     prob = ODEProblem(CR3BPstm!,w₀,tspan,sys)
-    nomTraj = solve(prob, reltol=reltol)
+    nomTraj = solve(prob, integrator, reltol=reltol)
     Φₜ = Matrix(reshape(nomTraj.u[end][7:42],6,6))
     rvₜ = nomTraj.u[end][1:6] # last time step
     Λ,V = eigen(Φₜ,sortby=isreal) # Λ is vector of eigenvalues, V is matrix of eigenvectors
@@ -76,13 +76,13 @@ function differential_corrector(sys::System, rv₀; myconst=3, iter=100, plot=fa
    # event function
    condition(u, t, integrator) = u[2]
    affect!(integrator) = terminate!(integrator)
-   cb = DifferentialEquations.ContinuousCallback(condition, affect!)
+   cb = OrdinaryDiffEq.ContinuousCallback(condition, affect!)
 
    for k = 1:iter
       w₀ = vcat(rv₀, reshape(Φ₀,36,1))
 
       prob = ODEProblem(CR3BPstm!,w₀,tspan,sys)
-      sol = solve(prob, reltol=tol, callback=cb)
+      sol = solve(prob, TsitPap8(), reltol=tol, callback=cb)
 
       w = sol[end]
       rv = w[1:6]
