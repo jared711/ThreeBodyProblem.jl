@@ -7,3 +7,7 @@
 docs/build/
 docs/site/
 style.txt
+
+example/ParallelComputation.jl
+example/InvariantFunnel.jl
+src/integrators.jl

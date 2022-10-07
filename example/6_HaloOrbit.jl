@@ -2,6 +2,7 @@ using ThreeBodyProblem
 using DifferentialEquations
 using Plots
 using LinearAlgebra
+pyplot()
 
 # Our goal today is to compute a halo orbit in the Sun Earth system
 
@@ -10,7 +11,7 @@ sys = earth_moon()
 sys.name
 
 ## Use the following syntax
-sys = System(ThreeBodyProblem.SUN, ThreeBodyProblem.EARTH)
+# sys = System(ThreeBodyProblem.SUN, ThreeBodyProblem.EARTH)
 
 ## Now, we are going to compute our first guess at a Halo Orbit using Richardson's expansion
 ### The details are complicated, but if you're curious check out this paper
@@ -29,23 +30,23 @@ plot(rvs[:,1],rvs[:,2],rvs[:,3],label="Richardson Approximation")
 tspan = (0., T)
 prob = ODEProblem(CR3BPdynamics!,rvs[1,:],tspan,sys)
 sol = solve(prob, reltol=1e-12)
-plot!(sol,vars=(1,2,3),label="Richardson Integrated",linecolor=:red)
+plot!(sol,vars=(1,2,3),label="Richardson Integrated",linecolor=:red,flip=false)
 
 ## We can see that this orbit diverges before completing a period
 ## We need to use a differential corrector to hone in on the true periodic orbit
 rv₀, T = differential_corrector(sys, rvs[1,:], myconst=3, tf=T)
 
 plot(sys)
-plot!(sol,vars=(1,2),color=:black,label="Actual Halo")
+plot!(sol,vars=(1,2,3),color=:black,label="Actual Halo")
 plot!(aspect_ratio=:equal,ylims=[-0.01,0.01],xlims=[0.985,1.015],legend=:outerright,flip=false)
 
 # This function requires the initial condition and period of a periodic orbit
 Wsp, Wsn, Wup, Wun = invariant_manifolds(sys,rv₀,T,tf=10.,nPts=100)
 
 for i = 1:length(Wsp)
-    plot!(Wsp[i],vars=(1,2),label="",linecolor=:blue)
-    plot!(Wsn[i],vars=(1,2),label="",linecolor=:cyan)
-    plot!(Wup[i],vars=(1,2),label="",linecolor=:red)
-    plot!(Wun[i],vars=(1,2),label="",linecolor=:magenta)
+    plot!(Wsp[i],vars=(1,2,3),label="",linecolor=:blue)
+    plot!(Wsn[i],vars=(1,2,3),label="",linecolor=:cyan)
+    plot!(Wup[i],vars=(1,2,3),label="",linecolor=:red)
+    plot!(Wun[i],vars=(1,2,3),label="",linecolor=:magenta)
 end
 plot!(flip=false,aspect_ratio=:equal,legend=:outerright,xlim=[0.995,1.03],ylim=[-0.02,0.02])

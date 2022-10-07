@@ -54,6 +54,7 @@ struct System
     R₁::Float64     # {km} Radius of primary Body
     R₂::Float64     # {km} Radius of Secondary Body
     T::Float64      # {s} sidereal orbital period
+    # ToDo: Might be good to add a mass unit MUNIT
     RUNIT::Float64  # {km} distance normalizing parameter
     TUNIT::Float64  # {s} time normalizing parameter
     VUNIT::Float64  # {km/s} velocity normalizing parameter
@@ -113,11 +114,12 @@ struct BicircularSystem
     R2::Float64     # {km} Radius of Secondary Body
     R3::Float64     # {km} Radius of tertiary body
     T::Float64      # {s} sidereal orbital period of prim and sec about each other
+    # ToDo: Maybe add T₃
     RUNIT::Float64  # {km} distance normalizing parameter
     TUNIT::Float64  # {s} time normalizing parameter
     VUNIT::Float64  # {km/s} velocity normalizing parameter
     AUNIT::Float64  # {km^2/s} acceleration normalizing parameter
-    name::String    # name of system (e.g. "Earth/Moon/SUN")
+    name::String    # name of system (e.g. "Earth/Moon/Sun")
 end
 BicircularSystem(prim::Body, sec::Body, ter::Body) = BicircularSystem(prim, sec, ter,
     prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/prim.T,
@@ -230,9 +232,15 @@ jupiter_europa() = System(JUPITER, EUROPA)
 saturn_enceladus() = System(SATURN, ENCELADUS)
 
 """
-    sun_earth_moon()
+    earth_moon_sun()
 """
 earth_moon_sun() = BicircularSystem(EARTH, MOON, SUN)
+
+"""
+    sun_earth_moon()
+"""
+sun_earth_moon() = BicircularSystem(SUN, EARTH, MOON)
+
 
 ## Extra values from ephemeris files
 # MARS        = Body(4.282837362069909E+04/G,

@@ -9,15 +9,16 @@ makedocs(
     format = Documenter.HTML(prettyurls = false),
     pages = [
         "Introduction" => "index.md"
+        "Examples" => "example.md"
         "Functions" => [
              "constants.md",
              "frames.md",
              "orbitalelements.md",
              "parameters.md",
              "util.md",
-             "dynamics.md",
-             "example.md"
+             "dynamics.md"
         ]
+        "Plotting" => "plot.md"
         #     "costfunctions.md",
         #     "constraints.md",
         #     "creating_problems.md",

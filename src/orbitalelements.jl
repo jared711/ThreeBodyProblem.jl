@@ -1,7 +1,7 @@
 """
     AP2a(rA, rP)
 
-Compute the semimajor axis given apoapsis and periapsis distances rA and rP.
+Compute the semimajor axis given apoapsis and periapsis distances Q and q.
 """
 function AP2a(Q, q)
     a = (Q + q)/2
@@ -23,6 +23,12 @@ function findrP(rv::Array, p::Array=[0,0,0])
     return rP, idx
 end
 
+
+"""
+    computeME(rv::Array, μ)
+
+Compute the total mechanical energy of an orbit given a state vector `rv` and graviational parameter `μ`
+"""
 function computeME(rv::Array, μ)
     r_ECI = rv[1:3]
     v_ECI = rv[4:6]
@@ -358,8 +364,8 @@ end
 
 """
     delaunay()
-    input orbital elements? or rv?
-    output delaunay variables
+
+Compute delaunay variables
 """
 function delaunay()
 end

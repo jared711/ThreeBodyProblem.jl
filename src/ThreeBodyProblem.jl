@@ -97,6 +97,8 @@ export  R2BPdynamics!,
         CWdynamics,
         BCPdynamics!,
         BCPdynamics,
+        BCPdynamics2!,
+        BCPdynamics2,
         BCPstm!,
         BCPstm
 

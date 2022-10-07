@@ -1,16 +1,13 @@
 using ThreeBodyProblem
-using DifferentialEquations
+using OrdinaryDiffEq
 using Plots
-
-gr() # This command sets GR as our plotting backend
-
-
+pyplot() # This command sets pyplot as our plotting backend
 
 μ₁ = 398600 # {km³/s²} gravitational parameter of Earth
 μ₂ = 4902   # {km³/s²} gravitational parameter of the Moon
 d = 384400  # {km} average distance between Earth and the Moon
 
-p = [μ₁, μ₂, d]
+p = [μ₁, μ₂, d] # parameters that define a CR3BP system
 
 L1 = computeL1(p) # calculate the Lagrange point L1 for the given system parameters p
 
@@ -25,12 +22,10 @@ N = 100
 X = range(-1.5*d,1.5*d,length=N)
 Y = range(-d,d,length=N)
 
-
-gr()
 f(x,y) = begin
     -(x^2 + y^2)*ωₛ^2/2 - μ₁/sqrt((x+R₁)^2 + y^2) - μ₂/sqrt((x-R₂)^2 + y^2)
-    # rv = [x; y; 0; 0; 0; 0]
-    # findUeff(rv,p)
+    # rv = [x, y, 0, 0, 0, 0]
+    # computeUeff(rv,p)
 end
 contour(X,Y,f,levels=200,fill=true)
 
