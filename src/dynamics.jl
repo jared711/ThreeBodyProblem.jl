@@ -239,10 +239,10 @@ between them. `t` is time {s}.
 function CR3BPinert(rv,p::Array,t)
     x,y,z,vx,vy,vz = rv
     μ₁,μ₂,d = p # parameters
-    R₁,R₂ = computeR1R2(p)
+    d₁,d₂ = computed1d2(p)
     ωₛ = sqrt((μ₁ + μ₂)/d^3)
-    r₁ = [x + R₁*cos(ωₛ*t); y + R₁*sin(ωₛ*t); 0] # distance to m1, LARGER MASS
-    r₂ = [x - R₂*cos(ωₛ*t); y - R₂*sin(ωₛ*t); 0] # distance to m2, smaller mass
+    r₁ = [x + d₁*cos(ωₛ*t); y + d₁*sin(ωₛ*t); 0] # distance to m1, LARGER MASS
+    r₂ = [x - d₂*cos(ωₛ*t); y - d₂*sin(ωₛ*t); 0] # distance to m2, smaller mass
     r₁³= norm(r₁)^3
     r₂³= norm(r₂)^3
     rvdot = zeros(6)

@@ -5,7 +5,7 @@ Compute the non-dimensional, directional distances of each body from the barycen
 parameter `μ` {NON}.
 """
 function computed1d2(μ)
-    d₁ = -μ
+    d₁ = μ
     d₂ = 1-μ
     return d₁, d₂
 end
@@ -13,7 +13,7 @@ end
 """
      computed1d2(sys::System)
 
-Compute the non-dimensional, directional distances of each body from the barycenter given CR3BP system
+Compute the non-dimensional distances of each body from the barycenter given CR3BP system
 `sys`.
 """
 computed1d2(sys::System) = computed1d2(sys.μ)
@@ -21,14 +21,14 @@ computed1d2(sys::System) = computed1d2(sys.μ)
 """
     computed1d2(p::Array)
 
-Compute the dimensional, directional distances of each body from the barycenter given `p = [μ₁,μ₂,d]`
+Compute the dimensional distances of each body from the barycenter given `p = [μ₁,μ₂,d]`
 {km³/s², km³/s², km} which are the gravitational parameters of the first and second primary
 bodies and the distance between them.
 """
 function computed1d2(p::Array)
     μ₁,μ₂,d = p
-    d₁ = -d*μ₂/(μ₁+μ₂)
-    d₂ =  d*μ₁/(μ₁+μ₂)
+    d₁ = d*μ₂/(μ₁+μ₂)
+    d₂ = d*μ₁/(μ₁+μ₂)
     return d₁, d₂
 end
 
@@ -63,7 +63,7 @@ second primary bodies and the distance between them.
 function computer1r2(rv,p::Array)
     x,y,z = rv[1:3]
     d₁,d₂ = computed1d2(p)
-    r₁ = sqrt((x - d₁)^2 + y^2 + z^2)
+    r₁ = sqrt((x + d₁)^2 + y^2 + z^2)
     r₂ = sqrt((x - d₂)^2 + y^2 + z^2)
     return r₁, r₂
 end
