@@ -1,35 +1,35 @@
 """
-     computeR1R2(μ)
+     computed1d2(μ)
 
-Compute the non-dimensional distances of each body from the barycenter given the mass
+Compute the non-dimensional, directional distances of each body from the barycenter given the mass
 parameter `μ` {NON}.
 """
-function computeR1R2(μ)
-    R₁ = -μ
-    R₂ = 1-μ
-    return R₁, R₂
+function computed1d2(μ)
+    d₁ = -μ
+    d₂ = 1-μ
+    return d₁, d₂
 end
 
 """
-     computeR1R2(sys::System)
+     computed1d2(sys::System)
 
-Compute the non-dimensional distances of each body from the barycenter given CR3BP system
+Compute the non-dimensional, directional distances of each body from the barycenter given CR3BP system
 `sys`.
 """
-computeR1R2(sys::System) = computeR1R2(sys.μ)
+computed1d2(sys::System) = computed1d2(sys.μ)
 
 """
-    computeR1R2(p::Array)
+    computed1d2(p::Array)
 
-Compute the dimensional distances of each body from the barycenter given `p = [μ₁,μ₂,d]`
+Compute the dimensional, directional distances of each body from the barycenter given `p = [μ₁,μ₂,d]`
 {km³/s², km³/s², km} which are the gravitational parameters of the first and second primary
 bodies and the distance between them.
 """
-function computeR1R2(p::Array)
+function computed1d2(p::Array)
     μ₁,μ₂,d = p
-    R₁ = d*μ₂/(μ₁+μ₂)
-    R₂ = d*μ₁/(μ₁+μ₂)
-    return R₁, R₂
+    d₁ = -d*μ₂/(μ₁+μ₂)
+    d₂ =  d*μ₁/(μ₁+μ₂)
+    return d₁, d₂
 end
 
 """
@@ -40,8 +40,8 @@ vector `rv = [r; v]` {NON; NON} and the mass parameter `μ` {NON}.
 """
 function computer1r2(rv,μ)
     x,y,z = rv[1:3]
-    r₁ = (x + μ)^2      + y^2 + z^2
-    r₂ = (x - 1 + μ)^2  + y^2 + z^2
+    r₁ = sqrt((x + μ)^2      + y^2 + z^2)
+    r₂ = sqrt((x - 1 + μ)^2  + y^2 + z^2)
     return r₁, r₂
 end
 
@@ -62,9 +62,9 @@ second primary bodies and the distance between them.
 """
 function computer1r2(rv,p::Array)
     x,y,z = rv[1:3]
-    R₁,R₂ = computeR1R2(p)
-    r₁ = (x + R₁)^2 + y^2 + z^2
-    r₂ = (x - R₂)^2 + y^2 + z^2
+    d₁,d₂ = computed1d2(p)
+    r₁ = sqrt((x - d₁)^2 + y^2 + z^2)
+    r₂ = sqrt((x - d₂)^2 + y^2 + z^2)
     return r₁, r₂
 end
 
@@ -265,50 +265,73 @@ function computeLpts(p::Array;tol=1e-15)
 end
 
 """
+    computeΩ(rv,μ)
+
+Compute effective potential given normalized state `rv` {NON} and mass parameter `μ` {NON}.
+"""
+function computeΩ(rv,μ)
+    x,y,z = rv[1:3]
+    r₁,r₂ = computer1r2(rv,μ)
+    Ω = (x^2 + y^2)/2 + (1-μ)/r₁ + μ/r₂;
+    return Ω
+end
+
+"""
+    computeΩ(rv,sys::System)
+
+Compute effective potential given state `rv = [r; v]`` {km; km/s} and CR3BP system `sys`.
+"""
+computeΩ(rv,sys::System) = computeΩ(rv,sys.μ)
+
+"""
+    computeΩ(rv,p::Array)
+
+Compute effective potential given state `rv = [r; v]`` {km; km/s} and `p = [μ₁,μ₂,d]`
+{km³/s²; km³/s²; km}, which are the gravitational parameters of the first and second primary
+bodies and the distance between them.
+"""
+function computeΩ(rv,p::Array)
+    x,y,z = rv[1:3]
+    r₁,r₂ = computer1r2(rv,p)
+    μ₁,μ₂,d = p
+    n = sqrt((μ₁ + μ₂)/d^3)
+    Ω = (x^2 + y^2)*n^2/2 + μ₁/r₁ + μ₂/r₂;
+    return Ω
+end
+
+"""
     computeUeff(rv,μ)
 
 Compute effective potential given normalized state `rv` {NON} and mass parameter `μ` {NON}.
 """
-function computeUeff(rv,μ)
-    x,y,z = rv[1:3]
-    r₁,r₂ = computer1r2(rv,μ)
-    Ueff = -(x^2 + y^2)/2 - (1-μ)/r₁ - μ/r₂;
-    return Ueff
-end
+computeUeff(rv,μ) = computeΩ(rv,μ)
+
 
 """
     computeUeff(rv,sys::System)
 
 Compute effective potential given state `rv = [r; v]`` {km; km/s} and CR3BP system `sys`.
 """
-computeUeff(rv,sys::System) = computeUeff(rv,sys.μ)
+computeUeff(rv,sys::System) = computeΩ(rv,sys)
 
 """
-    computeUeff(rv,p::Array)
+    computeΩ(rv,p::Array)
 
 Compute effective potential given state `rv = [r; v]`` {km; km/s} and `p = [μ₁,μ₂,d]`
 {km³/s²; km³/s²; km}, which are the gravitational parameters of the first and second primary
 bodies and the distance between them.
 """
-function computeUeff(rv,p::Array)
-    x,y,z = rv[1:3]
-    R₁,R₂ = computeR1R2(p)
-    r₁,r₂ = computer1r2(rv,p)
-    μ₁,μ₂,d = p
-    ωₛ = sqrt((μ₁ + μ₂)/d^3)
-    Ueff = -(x^2 + y^2)*ωₛ^2/2 - μ₁/r₁ - μ₂/r₂;
-    return Ueff
-end
+computeUeff(rv,p::Array) = computeΩ(rv,p)
 
 """
     computeC(rv,μ)
 
-Compute Jacobi constant given normalized state rv {NON} and mass parameter {NON}
+Compute Jacobi constant given normalized state rv {NON} and mass parameter μ {NON}
 """
 function computeC(rv,μ)
     v = norm(rv[4:6])
-    Ueff = computeUeff(rv,μ)
-    C = -2*Ueff - v^2
+    Ω = computeΩ(rv,μ)
+    C = 2*Ω - v^2
     return C
 end
 
@@ -327,11 +350,41 @@ which are the gravitational parameters of the first and second primary bodies
 [km³/s²] and the distance between them [km].
 """
 function computeC(rv,p::Array)
-    μ₁,μ₂,d = p
     v = norm(rv[4:6])
-    Ueff = computeUeff(rv,p)
-    C = -2*Ueff - v^2
+    Ω = computeΩ(rv,p)
+    C = 2*Ω - v^2
     return C
+end
+
+"""
+    computeCLpts(μ)
+
+Compute Jacobi constants of Lagrange Points given mass parameter μ {NON}.
+"""
+function computeCLpts(μ)
+    Lpts = computeLpts(μ)
+    CLpts = [computeC([Lpts[i];zeros(3)],μ) for i in 1:length(Lpts)]
+    return CLpts
+end
+
+"""
+    computeCLpts(sys::System)
+
+Compute Jacobi constants of Lagrange Points given system.
+"""
+computeCLpts(sys::System) = computeCLpts(sys.μ)
+
+"""
+    computeCLpts(p::Array)
+
+Compute Jacobi constants of Lagrange Points given p = [μ₁,μ₂,d],
+which are the gravitational parameters of the first and second primary bodies
+[km³/s²] and the distance between them [km].
+"""
+function computeCLpts(p::Array)
+    Lpts = computeLpts(p)
+    CLpts = [computeC([Lpts[i];zeros(3)],p) for i in 1:length(Lpts)]
+    return CLpts
 end
 
 
