@@ -1,4 +1,12 @@
 # This is the module file
+
+"""
+     ThreeBodyProblem
+
+ThreeBodyProblem.jl is a package for spacecraft trajectory design. It focuses mainly on the Circular Restricted Three-Body 
+Problem (CR3BP), but has functionality for keplerian two-body problems and bicircular four-body problems, as well as access to 
+ephemeris data through SPICE.jl. The package makes use of OrdinaryDiffEq.jl to perform numerical integrations of trajectories.
+""" 
 module ThreeBodyProblem
 
 using OrdinaryDiffEq
@@ -26,6 +34,9 @@ export  System,
         jupiter_europa,
         saturn_enceladus,
         earth_moon_sun,
+        sun_earth_moon,
+        jupiter_europa_sun,
+        saturn_enceladus_sun,
         SUN,
         MERCURY,
         VENUS,
@@ -114,7 +125,7 @@ export  AP2a,
         cart2azel
 
 include("util.jl")
-export  computeR1R2,
+export  computed1d2,
         computer1r2,
         computeL1,
         computeL2,
@@ -122,6 +133,8 @@ export  computeR1R2,
         computeL4,
         computeL5,
         computeLpts,
+        computeCLpts,
+        computeΩ,
         computeUeff,
         computeC,
         rotx,
