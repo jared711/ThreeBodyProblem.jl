@@ -33,7 +33,9 @@ function trajectory(rv)
     end
 end
 
-
+"""
+    Recipe for plotting systems
+"""
 @recipe function f(sys::System; prim=true, sec=true, Lpts=true, scaled=false)
     name1, name2 = split(sys.name, '/')
     color1 = sys.prim.color
@@ -43,6 +45,8 @@ end
     legend := true
     legend := :topleft
     aspect_ratio --> :equal
+    xguide := "x [NON]"
+    yguide := "y [NON]"
 
     if Lpts
         @series begin
@@ -83,6 +87,7 @@ end
             end
         end
     end
+
 end
 
 # function plot_Lpts(sys::System)
@@ -109,7 +114,9 @@ end
 #     plot!(sys,Lpts=false,prim=false)
 # end
 
-
+"""
+    Recipe for plotting bodies
+"""
 @recipe function f(body::Body; legend=true, center=[0,0,0], scalar=1)
     legend := legend
     legend := :topleft
@@ -124,6 +131,9 @@ end
     end
 end
 
+"""
+    Recipe for plotting trajectories
+"""
 @recipe function f(rv::Vector{Vector{T}} where T<:Real; label="trajectory", color=:black, planar=false)
 
     @series begin
