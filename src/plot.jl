@@ -1,3 +1,5 @@
+using Plots: cgrad
+
 """
     circle(r=1, c=[0,0,0]; n=100)
 
