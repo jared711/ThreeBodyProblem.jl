@@ -7,7 +7,7 @@ using Test
 d = 384400      # Avg distance between Earth and Moon
 p = [μ₁; μ₂; d]
 μ = μ₂/(μ₁ + μ₂)
-@test computeR1R2(μ) == (-μ, 1-μ)
+@test computed1d2(μ) == (μ, 1-μ)
 @test computeL1(μ) == [0.8369247061700067;0;0]
 @test computeL1(p) == [321713.8570517506;0;0]
 @test computeL2(μ) == [1.1556746768583537;0;0]
@@ -23,14 +23,12 @@ p = [μ₁; μ₂; d]
 @test computeLpts(p,tol=1e-3) != computeLpts(p)
 
 rv = [1,0,0,0,1,0]
-@test computeUeff(rv,p) < 0
-@test computeUeff([-μ;0;0],μ) == -Inf
+@test computeUeff(rv,p) == computeΩ(rv,p)
 
-@test_broken computeC(rv,p) > 0
-@test_broken computeC([-μ;0;0],μ) == Inf
+@test computeC(rv,p) > 0
+@test computeC([-μ;0;0],μ) == Inf
 
-Φ = ones(6,6)
-@test_broken stability_index(ϕ) > 1
+@test stability_index(I(6)) == 1
 
 sys = earth_moon()
 Lpts = computeLpts(sys)

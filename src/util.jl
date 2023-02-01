@@ -33,35 +33,35 @@ function computed1d2(p::Array)
 end
 
 """
-    computer1r2(rv, μ)
+    computer1r2(r, μ)
 
-Compute the non-dimensional position vectors of the particle from each body given the state
-vector `rv = [r; v]` {NON; NON} and the mass parameter `μ` {NON}.
+Compute the non-dimensional position vectors of the particle from each body given the position
+vector `r` {NON} and the mass parameter `μ` {NON}.
 """
-function computer1r2(rv,μ)
-    x,y,z = rv[1:3]
+function computer1r2(r,μ)
+    x,y,z = r[1:3]
     r₁ = sqrt((x + μ)^2      + y^2 + z^2)
     r₂ = sqrt((x - 1 + μ)^2  + y^2 + z^2)
     return r₁, r₂
 end
 
 """
-    computer1r2(rv, sys::System)
+    computer1r2(r, sys::System)
 
-Compute the non-dimensional position vectors of the particle from each body given the state
-vector `rv = [r; v]` {NON; NON} and the CR3BP system `sys`.
+Compute the non-dimensional position vectors of the particle from each body given the position
+vector `r` {NON} and the CR3BP system `sys`.
 """
-computer1r2(rv,sys::System) = computer1r2(rv,sys.μ)
+computer1r2(r,sys::System) = computer1r2(r,sys.μ)
 
 """
-    computer1r2(rv, p::Array)
+    computer1r2(r, p::Array)
 
-Compute the dimensional position vectors of the particle from each body given
-`p = [μ₁,μ₂,d]` {km³/s², km³/s², km} which are the gravitational parameters of the first and
+Compute the dimensional position vectors of the particle from each body given the position vector 'r' {km}
+and `p = [μ₁,μ₂,d]` {km³/s², km³/s², km} which are the gravitational parameters of the first and
 second primary bodies and the distance between them.
 """
-function computer1r2(rv,p::Array)
-    x,y,z = rv[1:3]
+function computer1r2(r,p::Array)
+    x,y,z = r[1:3]
     d₁,d₂ = computed1d2(p)
     r₁ = sqrt((x + d₁)^2 + y^2 + z^2)
     r₂ = sqrt((x - d₂)^2 + y^2 + z^2)
@@ -265,34 +265,49 @@ function computeLpts(p::Array;tol=1e-15)
 end
 
 """
-    computeΩ(rv,μ)
+    computeΩ(r,μ)
 
-Compute effective potential given normalized state `rv` {NON} and mass parameter `μ` {NON}.
+Compute effective potential given normalized position `r` {NON} and mass parameter `μ` {NON}.
 """
-function computeΩ(rv,μ)
-    x,y,z = rv[1:3]
-    r₁,r₂ = computer1r2(rv,μ)
+function computeΩ(r,μ)
+    if length(r) == 2 || length(r) == 4
+        x,y = r[1:2]
+        z = 0
+    elseif length(r) == 3 || length(r) == 6
+        x,y,z = r[1:3]
+    else
+        error("Invalid position vector length.")
+    end
+    x,y,z = r[1:3]
+    r₁,r₂ = computer1r2(r,μ)
     Ω = (x^2 + y^2)/2 + (1-μ)/r₁ + μ/r₂;
     return Ω
 end
 
 """
-    computeΩ(rv,sys::System)
+    computeΩ(r,sys::System)
 
-Compute effective potential given state `rv = [r; v]`` {km; km/s} and CR3BP system `sys`.
+Compute effective potential given position `r` {NON} and CR3BP system `sys`.
 """
-computeΩ(rv,sys::System) = computeΩ(rv,sys.μ)
+computeΩ(r,sys::System) = computeΩ(r,sys.μ)
 
 """
-    computeΩ(rv,p::Array)
+    computeΩ(r,p::Array)
 
-Compute effective potential given state `rv = [r; v]`` {km; km/s} and `p = [μ₁,μ₂,d]`
+Compute effective potential given position `r` {km} and `p = [μ₁,μ₂,d]`
 {km³/s²; km³/s²; km}, which are the gravitational parameters of the first and second primary
 bodies and the distance between them.
 """
-function computeΩ(rv,p::Array)
-    x,y,z = rv[1:3]
-    r₁,r₂ = computer1r2(rv,p)
+function computeΩ(r,p::Array)
+    if length(r) == 2 || length(r) == 4
+        x,y = r[1:2]
+        z = 0
+    elseif length(r) == 3 || length(r) == 6
+        x,y,z = r[1:3]
+    else
+        error("Invalid position vector length.")
+    end
+    r₁,r₂ = computer1r2(r,p)
     μ₁,μ₂,d = p
     n = sqrt((μ₁ + μ₂)/d^3)
     Ω = (x^2 + y^2)*n^2/2 + μ₁/r₁ + μ₂/r₂;
@@ -300,37 +315,52 @@ function computeΩ(rv,p::Array)
 end
 
 """
-    computeUeff(rv,μ)
+    computeUeff(r,μ)
 
-Compute effective potential given normalized state `rv` {NON} and mass parameter `μ` {NON}.
+Compute effective potential given normalized position `r` {NON} and mass parameter `μ` {NON}.
 """
-computeUeff(rv,μ) = computeΩ(rv,μ)
+computeUeff(r,μ) = computeΩ(r,μ)
 
-
-"""
-    computeUeff(rv,sys::System)
-
-Compute effective potential given state `rv = [r; v]`` {km; km/s} and CR3BP system `sys`.
-"""
-computeUeff(rv,sys::System) = computeΩ(rv,sys)
 
 """
-    computeΩ(rv,p::Array)
+    computeUeff(r,sys::System)
 
-Compute effective potential given state `rv = [r; v]`` {km; km/s} and `p = [μ₁,μ₂,d]`
+Compute effective potential given position `r` {NON} and CR3BP system `sys`.
+"""
+computeUeff(r,sys::System) = computeΩ(r,sys)
+
+"""
+    computeΩ(r,p::Array)
+
+Compute effective potential given position `r` {km} and `p = [μ₁,μ₂,d]`
 {km³/s²; km³/s²; km}, which are the gravitational parameters of the first and second primary
 bodies and the distance between them.
 """
-computeUeff(rv,p::Array) = computeΩ(rv,p)
+computeUeff(r,p::Array) = computeΩ(r,p)
 
 """
-    computeC(rv,μ)
+    computeC(r,μ)
 
 Compute Jacobi constant given normalized state rv {NON} and mass parameter μ {NON}
 """
 function computeC(rv,μ)
-    v = norm(rv[4:6])
-    Ω = computeΩ(rv,μ)
+    if length(rv) == 2
+        r = [rv[1], rv[2], 0]
+        v = 0
+    elseif length(rv) == 3
+        r = rv[1:3]
+        v = 0
+    elseif length(rv) == 4
+        r = [rv[1], rv[2], 0]
+        v = [rv[3], rv[4], 0]
+    elseif length(rv) == 6
+        r = rv[1:3]
+        v = rv[4:6]
+    else
+        error("rv must be of length 2, 3, 4, or 6")
+    end
+    v = norm(v)
+    Ω = computeΩ(r,μ)
     C = 2*Ω - v^2
     return C
 end
@@ -350,9 +380,35 @@ which are the gravitational parameters of the first and second primary bodies
 [km³/s²] and the distance between them [km].
 """
 function computeC(rv,p::Array)
-    v = norm(rv[4:6])
-    Ω = computeΩ(rv,p)
+    if length(rv) == 2
+        r = [rv[1], rv[2], 0]
+        v = 0
+    elseif length(rv) == 3
+        r = rv[1:3]
+        v = 0
+    elseif length(rv) == 4
+        r = [rv[1], rv[2], 0]
+        v = [rv[3], rv[4], 0]
+    elseif length(rv) == 6
+        r = rv[1:3]
+        v = rv[4:6]
+    else
+        error("rv must be of length 2, 3, 4, or 6")
+    end
+    v = norm(v)
+    Ω = computeΩ(r,p)
     C = 2*Ω - v^2
+    return C
+end
+
+"""
+    computeC(traj::Vector{Vector{T}} where T<:Real, sys::System)
+
+Compute Jacobi constants of each state rv = [r; v] {km; km/s} on a 
+trajectory traj given a system sys
+"""
+function computeC(traj::Vector{Vector{T}} where T<:Real, sys::System)
+    C = [computeC(traj[i],sys) for i ∈ 1:lastindex(traj)]
     return C
 end
 
@@ -363,7 +419,7 @@ Compute Jacobi constants of Lagrange Points given mass parameter μ {NON}.
 """
 function computeCLpts(μ)
     Lpts = computeLpts(μ)
-    CLpts = [computeC([Lpts[i];zeros(3)],μ) for i in 1:length(Lpts)]
+    CLpts = [computeC([Lpts[i];zeros(3)],μ) for i ∈ eachindex(Lpts)]
     return CLpts
 end
 
@@ -383,7 +439,7 @@ which are the gravitational parameters of the first and second primary bodies
 """
 function computeCLpts(p::Array)
     Lpts = computeLpts(p)
-    CLpts = [computeC([Lpts[i];zeros(3)],p) for i in 1:length(Lpts)]
+    CLpts = [computeC([Lpts[i];zeros(3)],p) for i in 1:eachindex(Lpts)]
     return CLpts
 end
 
@@ -412,7 +468,10 @@ end
 Compute the stability index for a trajectory given its state transition matrix Φ
 """
 function stability_index(Φ)
-    return 1
+    λ, V = eigen(Φ) # λ is a vector of eigenvalues and V is a matrix of eigenvectors
+    λmax =  maximum(real(λ))
+    ν = 1/2*(abs(λmax) + 1/abs(λmax))
+    return ν
 end
 
 """

@@ -154,23 +154,35 @@ export  computed1d2,
         deserno_sphere,
         deserno_hemisphere,
         spherical_ring,
-        gammaL
+        gammaL,
+        stability_index
 
 
-include("plot.jl")
+include("plot.jl") # The plot recipes don't need to be exported, as they are automatically included when the package is loaded.
 export  circle,
-        sphere
+     #    plot_circle, # I don't like creating my own plot functions, as it removes a lot of the flexibility of Plots.jl.
+     #    plot_circle!, # Instead, I will just create functions that return the data to be plotted.
+        sphere,
+     #    plot_sphere, # use plot(sphere(), ...) or plot!(sphere(), ...) instead
+     #    plot_sphere!,
+        torus
+     #    plot_torus,
+     #    plot_torus!,
         # seczoom,
-        # plot_prim!,
-        # plot_prim,
-        # plot_sec!,
-        # plot_sec,
-        # plot_Lpts!,
-        # plot_Lpts
+     #    plot_prim!,
+     #    plot_prim,
+     #    plot_sec!,
+     #    plot_sec,
+     #    plot_Lpts!,
+     #    plot_Lpts
 
 include("special.jl")
 export  invariant_manifolds,
         rich3,
-        differential_corrector
+        differential_corrector,
+        differential_corrector_QPO,
+        invariant_circle,
+        monodromy
+
 
 end # module
