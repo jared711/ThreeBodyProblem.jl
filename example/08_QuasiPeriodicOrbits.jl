@@ -1,9 +1,8 @@
 # Learn how to compute Quasi-periodic orbits in the CR3BP
 
 using ThreeBodyProblem
-using DifferentialEquations
+using OrdinaryDiffEq
 using Plots
-# pyplot()
 using LinearAlgebra
 
 # We'll first define a halo orbit in the Saturn/Enceladus system
