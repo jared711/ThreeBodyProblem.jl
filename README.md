@@ -24,7 +24,7 @@ Pkg.add(path="[local path]/ThreeBodyProblem.jl")
 Note that this syntax may vary slightly on Windows.
 
 ## Examples
-We've put together some working examples that demonstrate many of the functionalities of ThreeBodyProblem.jl. They can be found in the example folder [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example). Each example has a .jl file and a .ipynb file. The .jl file can be run line by line in your favorite IDE while the .ipynb file is a Jupyter notebook. The .ipynb 
+We've put together some working examples that demonstrate many of the functionalities of ThreeBodyProblem.jl. They can be found in the example folder [here](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example). Each example has a .jl file and a .ipynb file. The .jl file can be run line by line in your favorite IDE while the .ipynb file is a Jupyter notebook.
 
 ### Jupyter Notebooks
 To run Jupyter notebooks on your local machine, you need to have the IJulia package downloaded.
