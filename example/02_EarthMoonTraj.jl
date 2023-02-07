@@ -51,7 +51,7 @@ plot(sol,vars=(1,2),title="Lunar return trajectory in rotating frame")
 plot!(circle(Rₑ,[R₁;0]),color="blue",label="Earth")
 plot!(circle(Rₘ,[R₂;0]),color="gray",label="Moon",aspect_ratio=:equal)
 
-rv_inert = [rot2inert(sol.u[i],sol.t[i],p) for i = 1:length(sol)]
-x = [rv_inert[i][1] for i = 1:length(rv_inert)]
-y = [rv_inert[i][2] for i = 1:length(rv_inert)]
+rv_inert = [rot2inert(sol.u[i],sol.t[i],p) for i in eachindex(sol)]
+x = [rv_inert[i][1] for i in eachindex(rv_inert)]
+y = [rv_inert[i][2] for i in eachindex(rv_inert)]
 plot(x,y,legend=:topleft)
