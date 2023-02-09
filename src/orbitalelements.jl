@@ -1,33 +1,39 @@
-"""
-    AP2a(rA, rP)
+# """
+#     AP2a(rA, rP)
 
-Compute the semimajor axis given apoapsis and periapsis distances Q and q.
-"""
-function AP2a(Q, q)
-    a = (Q + q)/2
-end
+# Compute the semimajor axis given apoapsis and periapsis distances Q and q.
+# """
+# function AP2a(Q, q)
+#     a = (Q + q)/2
+# end
 
-"""
-    computeq(rv::Array,p::Array)
-computeq
-"""
-function findrP(rv::Array, p::Array=[0,0,0])
-    if size(rv[1]) == (6,) || size(rv[1]) == (3,)
-        r = [rv[i][1:3] - p for i = 1:length(rv)]
-        rP = minimum(norm,r)
-        idx = findall(x -> norm(x) == rP, r)
-    else
-        rP = norm(rv[1:3] - p)
-        idx = 1
-    end
-    return rP, idx
-end
+# """
+#     computeq(rv::Array,p::Array=[0,0,0])
+
+# returns the periapsis state of a trajectory with respect to a point p.
+# """
+# function findrP(rv::Array, p::Array=[0,0,0])
+#     if size(rv[1]) == (6,) || size(rv[1]) == (3,)
+#         r = [rv[i][1:3] - p for i = 1:length(rv)]
+#         rP = minimum(norm,r)
+#         idx = findall(x -> norm(x) == rP, r)
+#     elseif size(rv[1]) == (4,) || size(rv[1]) == (2,)
+#         r = [rv[i][1:3] - p for i = 1:length(rv)]
+#         rP = minimum(norm,r)
+#         idx = findall(x -> norm(x) == rP, r)
+#     else
+#         rP = norm(rv[1:3] - p)
+#         idx = 1
+#     end
+#     return rP, idx
+# end
 
 
 """
     computeME(rv::Array, μ)
 
-Compute the total mechanical energy of an orbit given a state vector `rv` and graviational parameter `μ`
+Compute the total mechanical energy of an orbit given a state vector `rv` and graviational parameter `μ`.
+Working in the inertial frame.
 """
 function computeME(rv::Array, μ)
     r_ECI = rv[1:3]
@@ -66,17 +72,16 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
     n = norm(n_ECI)
     e_ECI = (1/μ)*((v^2 - μ/r)*r_ECI - (r_ECI'*v_ECI)*v_ECI)
     e = norm(e_ECI)     # [] eccentricity
-
-    # size of orbit
-    ℰ = 0.5*v^2 - μ/r   # [km²/s²] specific mechanical energy
-    # ℰ = computeME(rv, μ)
-
-    if e == 1
+    
+    # special case of parabolic orbit
+    if e ≈ 1 # if e is approximately 1, then the orbit is parabolic (default tolerance is √ϵ ≈ 1.49e-8)
+        ℰ = 0           # [km²/s²] specific mechanical energy
         a = Inf         # [km] semimajor axis
         p = h^2/μ       # [km] semilatus rectum
     else
-        a = -μ/(2*ℰ)    # [km] semimajor axis
-        p = a*(1 - e^2) # [km] semilatus rectum
+        ℰ = 0.5*v^2 - μ/r   # [km²/s²] specific mechanical energy
+        a = -μ/(2*ℰ)        # [km] semimajor axis
+        p = a*(1 - e^2)     # [km] semilatus rectum
     end
 
     # orientation of orbit
@@ -103,7 +108,7 @@ function cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
         if r_ECI[2] < 0;    l = 360 - l;    end
     end
 
-    if ang_unit == :deg
+    if ang_unit == :deg # do nothing
     elseif ang_unit == :rad
         i = deg2rad(i)
         Ω = deg2rad(Ω)
@@ -180,6 +185,10 @@ julia> nu2E(180, 0.5, ang_unit=:deg)
 ```
 """
 function nu2E(ν, e; ang_unit::Symbol=:deg)
+    if e >= 1 # doesn't work for parabolic and hyperbolic orbits
+        error("e must be less than 1")
+    end
+
     if ang_unit == :deg
     elseif ang_unit == :rad
         ν = rad2deg(ν)
@@ -187,10 +196,8 @@ function nu2E(ν, e; ang_unit::Symbol=:deg)
         error("ang_unit should be :rad or :deg")
     end
 
-    E = 2*atand(tand(nu/2)*sqrt((1 - e)/(1 + e)));
-
-    while E >= 360; E -= 360;   end
-    while E <= 0;   E += 360;   end
+    E = 2*atand(tand(ν/2)*sqrt((1 - e)/(1 + e))); # compute eccentric anomaly
+    E = wrapto360(E) # make keep E within the range (0,360)
 
     if ang_unit == :deg
     elseif ang_unit == :rad
@@ -214,6 +221,10 @@ julia> E2nu(180, 0.5, ang_unit=:deg)
 ```
 """
 function E2nu(E, e; ang_unit::Symbol=:deg)
+    if e >= 1 # doesn't work for parabolic and hyperbolic orbits
+        error("e must be less than 1")
+    end
+
     if ang_unit == :deg
     elseif ang_unit == :rad
         E = rad2deg(E)
@@ -221,9 +232,8 @@ function E2nu(E, e; ang_unit::Symbol=:deg)
         error("ang_unit should be :rad or :deg")
     end
 
-    ν = 2*atand(sqrt((1 + e)/(1 - e))*tand(E/2));
-    while ν >= 360; ν -= 360;   end
-    while ν <= 0;   ν += 360;   end
+    ν = 2*atand(sqrt((1 + e)/(1 - e))*tand(E/2)); # compute true anomaly
+    ν = wrapto360(ν) # make keep ν within the range (0,360)
 
     if ang_unit == :deg
     elseif ang_unit == :rad
@@ -255,6 +265,7 @@ function E2M(E, e; ang_unit::Symbol=:deg)
     end
 
     M = E - e*sind(E)
+    M = wrapto360(M) # make keep M within the range (0,360)
 
     if ang_unit == :deg
     elseif ang_unit == :rad
@@ -277,7 +288,7 @@ julia> M2E(180, 0.5, ang_unit=:deg, tol=1e-10)
 180
 ```
 """
-function M2E(E, e; ang_unit::Symbol=:deg, tol=1e-10, i_max=100)
+function M2E(M, e; ang_unit::Symbol=:deg, tol=1e-10, i_max=100)
     if ang_unit == :deg
     elseif ang_unit == :rad
         M = rad2deg(M)
@@ -294,6 +305,8 @@ function M2E(E, e; ang_unit::Symbol=:deg, tol=1e-10, i_max=100)
         iter += 1
     end
 
+    E = wrapto360(E) # make keep E within the range (0,360)
+
     if ang_unit == :deg
     elseif ang_unit == :rad
         E = deg2rad(E)
@@ -302,70 +315,11 @@ function M2E(E, e; ang_unit::Symbol=:deg, tol=1e-10, i_max=100)
     return E
 end
 
-"""
-    azel2cart(az, el, d=1; ang_unit::Symbol=:deg)
+# """
+#     delaunay()
 
-Convert azimuth and elevation angles to cartesian coordinates
-
-See also: [`cart2azel`](@ref)
-
-# Examples
-```jldoctest
-julia> azel2cart(90, 90, ang_unit=:deg)
-[0,0,1]
-```
-"""
-function azel2cart(az, el, d=1; ang_unit::Symbol=:deg)
-    if ang_unit == :deg
-    elseif ang_unit == :rad
-        az = rad2deg(az)
-        el = rad2deg(el)
-    else
-        error("ang_unit should be :rad or :deg")
-    end
-
-    # vector in East/North/Up coordinates
-    r_ENU = [d*cosd(el)*sind(az);
-             d*cosd(el)*cosd(az);
-             d*sind(el)];
-
-    return r_ENU
-end
-
-"""
-    cart2azel(r_ENU; ang_unit::Symbol=:deg)
-
-Convert cartesian coordinates from ENU to azimuth, elevation, and magnitude
-
-See also: [`azel2cart2`](@ref)
-
-# Examples
-```jldoctest
-julia> cart2azel([1,0,0], ang_unit=:deg)
-90
-```
-"""
-function cart2azel(r_ENU; ang_unit::Symbol=:deg)
-    d = norm(r_ENU)
-    el = asind(r_ENU[3]/d)
-    az = atan2d(r_ENU[1], r_ENU[2])
-
-    if ang_unit == :deg
-    elseif ang_unit == :rad
-        az = deg2rad(az)
-        el = deg2rad(el)
-    else
-        error("ang_unit should be :rad or :deg")
-    end
-
-    return az, el, d
-end
-
-
-"""
-    delaunay()
-
-Compute delaunay variables
-"""
-function delaunay()
-end
+# Compute delaunay variables
+# """
+# function delaunay()
+#     return nothing
+# end

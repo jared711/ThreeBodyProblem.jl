@@ -1,4 +1,42 @@
 """
+    dimensionalize(rv, sys::System)
+
+Add dimensions to normalized state vector `rv`
+"""
+function dimensionalize(rv, sys::System)
+    return vcat(rv[1:3]*sys.RUNIT, rv[4:6]*sys.VUNIT)
+end
+
+"""
+    dimensionalize!(rv, sys::System)
+
+In-place version of dimensionalize(rv, sys::System)
+"""
+function dimensionalize!(rv, sys::System)
+    rv[1:6] = dimensionalize(rv,sys)
+    return nothing
+end
+
+"""
+    nondimensionalize(rv, sys::System)
+
+Normalize state vector `rv`
+"""
+function nondimensionalize(rv, sys::System)
+    return vcat(rv[1:3]/sys.RUNIT, rv[4:6]/sys.VUNIT)
+end
+
+"""
+    nondimensionalize!(rv, sys::System)
+
+In-place version of nondimensionalize(rv, sys::System)
+"""
+function nondimensionalize!(rv, sys::System)
+    rv[1:6] = nondimensionalize(rv,sys)
+    return nothing
+end
+
+"""
     rot2inert(rv, θ, μ; origin=:barycenter)
 
 Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to inertial
@@ -437,43 +475,4 @@ function cart2azel(r_ENU; ang_unit::Symbol=:deg)
     end
 
     return az, el, d
-end
-
-
-"""
-    dimensionalize(rv, sys::System)
-
-Add dimensions to normalized state vector `rv`
-"""
-function dimensionalize(rv, sys::System)
-    return vcat(rv[1:3]*sys.RUNIT, rv[4:6]*sys.VUNIT)
-end
-
-"""
-    dimensionalize!(rv, sys::System)
-
-In-place version of dimensionalize(rv, sys::System)
-"""
-function dimensionalize!(rv, sys::System)
-    rv[1:6] = dimensionalize(rv,sys)
-    return nothing
-end
-
-"""
-    nondimensionalize(rv, sys::System)
-
-Normalize state vector `rv`
-"""
-function nondimensionalize(rv, sys::System)
-    return vcat(rv[1:3]/sys.RUNIT, rv[4:6]/sys.VUNIT)
-end
-
-"""
-    nondimensionalize!(rv, sys::System)
-
-In-place version of nondimensionalize(rv, sys::System)
-"""
-function nondimensionalize!(rv, sys::System)
-    rv[1:6] = nondimensionalize(rv,sys)
-    return nothing
 end

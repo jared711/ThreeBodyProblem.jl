@@ -404,7 +404,7 @@ end
 """
     computeC(traj::Vector{Vector{T}} where T<:Real, sys::System)
 
-Compute Jacobi constants of each state rv = [r; v] {km; km/s} on a 
+Compute Jacobi constants of each state rv = [r; v] {NON; NON} on a 
 trajectory traj given a system sys
 """
 function computeC(traj::Vector{Vector{T}} where T<:Real, sys::System)
@@ -419,7 +419,7 @@ Compute Jacobi constants of Lagrange Points given mass parameter μ {NON}.
 """
 function computeCLpts(μ)
     Lpts = computeLpts(μ)
-    CLpts = [computeC([Lpts[i];zeros(3)],μ) for i ∈ eachindex(Lpts)]
+    CLpts = [computeC(Lpts[i],μ) for i ∈ eachindex(Lpts)]
     return CLpts
 end
 
@@ -439,11 +439,9 @@ which are the gravitational parameters of the first and second primary bodies
 """
 function computeCLpts(p::Array)
     Lpts = computeLpts(p)
-    CLpts = [computeC([Lpts[i];zeros(3)],p) for i in 1:eachindex(Lpts)]
+    CLpts = [computeC(Lpts[i],p) for i in 1:eachindex(Lpts)]
     return CLpts
 end
-
-
 
 """
     computeT(rv,sys::System) UNFINISHED (I don't like this name, "tisserand" is better)
@@ -458,7 +456,7 @@ function computeT(a,e,i; aⱼ=7.783561990635208e8, ang_unit::Symbol=:deg)
         error("ang_unit should be :rad or :deg")
     end
 
-    T = aⱼ/a + s*sqrt(a/aⱼ*(1 - e^2)*cosd(i))
+    T = aⱼ/a + 2*cosd(i)*sqrt(a/aⱼ*(1 - e^2))
     return T
 end
 
@@ -468,7 +466,7 @@ end
 Compute the stability index for a trajectory given its state transition matrix Φ
 """
 function stability_index(Φ)
-    λ, V = eigen(Φ) # λ is a vector of eigenvalues and V is a matrix of eigenvectors
+    λ,_ = eigen(Φ) # λ is a vector of eigenvalues and V is a matrix of eigenvectors
     λmax =  maximum(real(λ))
     ν = 1/2*(abs(λmax) + 1/abs(λmax))
     return ν
@@ -476,6 +474,8 @@ end
 
 """
     rotx(θ)
+
+returns the rotation matrix about the x-axis by angle θ {rad}
 """
 function rotx(θ)
     R = [1      0       0;
@@ -486,6 +486,8 @@ end
 
 """
     rotxd(θ)
+
+returns the rotation matrix about the x-axis by angle θ {deg}
 """
 function rotxd(θ)
     R = [1      0       0;
@@ -496,6 +498,8 @@ end
 
 """
     roty(θ)
+
+returns the rotation matrix about the y-axis by angle θ {rad}
 """
 function roty(θ)
     R = [cos(θ)  0  sin(θ);
@@ -506,6 +510,8 @@ end
 
 """
     rotyd(θ)
+
+returns the rotation matrix about the y-axis by angle θ {deg}
 """
 function rotyd(θ)
     R = [cosd(θ)  0  sind(θ);
@@ -516,6 +522,8 @@ end
 
 """
     rotz(θ)
+
+# returns the rotation matrix about the z-axis by angle θ {rad}
 """
 function rotz(θ)
     R = [cos(θ) -sin(θ) 0;
@@ -526,6 +534,8 @@ end
 
 """
     rotzd(θ)
+
+# returns the rotation matrix about the z-axis by angle θ {deg}
 """
 function rotzd(θ)
     R = [cosd(θ) -sind(θ) 0;
@@ -536,6 +546,8 @@ end
 
 """
     rotlatlon(ϕ, λ; ang_unit=:deg)
+
+# returns the rotation matrix to convert from ECEF to local ENU coordinates given latitude and 
 """
 function rotlatlon(ϕ, λ; ang_unit=:deg)
     if ang_unit == :rad
@@ -553,6 +565,8 @@ end
 
 """
     date2mjd(ut1_date)
+
+Converts a date to Modified Julian Date (MJD) given a date in the form [Y,M,D] or [Y,M,D,h,m,s].
 """
 function date2mjd(ut1_date)
     if size(ut1_date) == (3,)
@@ -602,6 +616,8 @@ end
 
 """
     mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
+
+# returns the Greenwich Mean Sidereal Time (GMST) at a given UT1 time in Modified Julian Date (MJD)
 """
 function mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
     θ₀ = 280.4606 # [deg] Greenwich Mean Sidereal time at J2000 Epoch
@@ -624,6 +640,8 @@ end
 
 """
     wrapto360(θ)
+
+# returns the angle θ in the range [0, 360]
 """
 function wrapto360(θ)
     while θ < 0;    θ += 360;   end
@@ -633,6 +651,8 @@ end
 
 """
     wrapto180(θ)
+
+# returns the angle θ in the range [-180, 180]
 """
 function wrapto180(θ)
     while θ < -180;  θ += 360;   end
@@ -642,6 +662,8 @@ end
 
 """
     wrapto2pi(θ)
+
+# returns the angle θ in the range [0, 2π]
 """
 function wrapto2pi(θ)
     while θ < 0;    θ += 2π;    end
@@ -651,6 +673,8 @@ end
 
 """
     wraptopi(θ)
+
+# returns the angle θ in the range [-π, π]
 """
 function wraptopi(θ)
     while θ < -π;   θ += 2π;    end
@@ -660,6 +684,8 @@ end
 
 """
     date2str(date)
+
+# returns a string with the date in the format "YYYY-MM-DD hh:mm:ss"
 """
 function date2str(date)
     Y = Int(date[1])
@@ -674,101 +700,106 @@ end
 """
     deserno_sphere(N_desired)
 
-    Adapted from Lucas Bury's code implementing the algorithm in Deserno, M. (2004) How to
-    Generate Equidistributed points on the Surface of a Sphere
+Adapted from Lucas Bury's code implementing the algorithm in Deserno, M. (2004) How to
+Generate Equidistributed points on the Surface of a Sphere
 """
 function deserno_sphere(N_desired)
 
-area = 4*pi/N_desired
-distance = sqrt(area)
+    area = 4*pi/N_desired
+    distance = sqrt(area)
 
-M_theta = round(pi/distance);
+    M_theta = round(pi/distance);
 
-d_theta = pi/M_theta
+    d_theta = pi/M_theta
 
-d_phi = area/d_theta;
+    d_phi = area/d_theta;
 
-N_new = 0;
-xs = zeros(0)
-ys = zeros(0)
-zs = zeros(0)
-for m in 0:(M_theta-1)
+    N_new = 0;
+    xs = zeros(0)
+    ys = zeros(0)
+    zs = zeros(0)
+    for m in 0:(M_theta-1)
 
-    theta = pi*(m+0.5)/M_theta;
-    M_phi = round(2*pi*sin(theta)/d_phi); # not exact
+        theta = pi*(m+0.5)/M_theta;
+        M_phi = round(2*pi*sin(theta)/d_phi); # not exact
 
-    for n in 0:(M_phi-1)
-        Phi = 2*pi*n/M_phi;
+        for n in 0:(M_phi-1)
+            Phi = 2*pi*n/M_phi;
 
-        N_new = N_new + 1;
+            N_new = N_new + 1;
 
-        append!(xs, sin(theta)*cos(Phi))
-        append!(ys, sin(theta)*sin(Phi))
-        append!(zs, cos(theta))
+            append!(xs, sin(theta)*cos(Phi))
+            append!(ys, sin(theta)*sin(Phi))
+            append!(zs, cos(theta))
+        end
     end
-end
 
-xyz_Sphere = copy(transpose(hcat(xs, ys, zs)))
+    xyz_Sphere = copy(transpose(hcat(xs, ys, zs)))
 
-return xyz_Sphere, N_new
+    return xyz_Sphere, N_new
 end
 
 """
-deserno_hemisphere(N_desired, normal)
+    deserno_hemisphere(N_desired, normal)
+
+# returns a point cloud of N_desired points in a hemisphere centered around the normal vector
 """
 function deserno_hemisphere(N_desired, normal)
-# -------------------------------------------------
-### Obtaining spherical point cloud
-# -------------------------------------------------
-xyz_Sphere, N_sphere = deserno_sphere(N_desired*2);
+    # -------------------------------------------------
+    ### Obtaining spherical point cloud
+    # -------------------------------------------------
+    xyz_Sphere, N_sphere = deserno_sphere(N_desired*2);
 
-# -------------------------------------------------
-### Grab the desired hemisphere
-# -------------------------------------------------
-### Indices points with a 'z' value >= 0
-indices = xyz_Sphere[3,:] .>= 0
+    # -------------------------------------------------
+    ### Grab the desired hemisphere
+    # -------------------------------------------------
+    ### Indices points with a 'z' value >= 0
+    indices = xyz_Sphere[3,:] .>= 0
 
-### Use logical indexing to grab all points with a 'z' >= 0
-xyz_hem = xyz_Sphere[:,indices]
-N_new = size(xyz_hem, 2)
+    ### Use logical indexing to grab all points with a 'z' >= 0
+    xyz_hem = xyz_Sphere[:,indices]
+    N_new = size(xyz_hem, 2)
 
-# -------------------------------------------------
-### If new center is in the -z axis, just flip the signs on the existing hemisphere
-# -------------------------------------------------
-### In getSphere, the pattern is centered around the 'z' axis
-oldNormal = [0, 0, 1]
+    # -------------------------------------------------
+    ### If new center is in the -z axis, just flip the signs on the existing hemisphere
+    # -------------------------------------------------
+    ### In getSphere, the pattern is centered around the 'z' axis
+    oldNormal = [0, 0, 1]
 
-### Turn input vector to unit vector
-normal = normal ./ norm(normal)
+    ### Turn input vector to unit vector
+    normal = normal ./ norm(normal)
 
-### In case the new center is in the opposite direction of the old center, can
-### save computational time with this (but also the other algorithm breaks)
-if normal == -oldNormal
+    ### In case the new center is in the opposite direction of the old center, can
+    ### save computational time with this (but also the other algorithm breaks)
+    if normal == -oldNormal
+        xyz_unitHemisphere = zeros(size(xyz_hem))
+        for kk in 1:N_new
+            xyz_unitHemisphere[:,kk] = [xyz_hem[1,kk], xyz_hem[2,kk],-xyz_hem[3,kk]]
+        end
+        return xyz_unitHemisphere, N_new
+    end
+
+    # -------------------------------------------------
+    ### Compute the rotation matrix to properly align the new hemisphere
+    # -------------------------------------------------
+    ### Algorithm to compute a rotation matrix between two vectors
+    v = cross(oldNormal, normal)
+    skewSymmetricMat = [0 -v[3] v[2]; v[3] 0 -v[1]; -v[2] v[1] 0]
+    R_old2new = [1 0 0; 0 1 0; 0 0 1] + skewSymmetricMat + skewSymmetricMat*skewSymmetricMat*(1 / (1 + dot(oldNormal,normal)))
+
+    ### Rotate old hemisphere to new position, centered about normal
     xyz_unitHemisphere = zeros(size(xyz_hem))
     for kk in 1:N_new
-        xyz_unitHemisphere[:,kk] = [xyz_hem[1,kk], xyz_hem[2,kk],-xyz_hem[3,kk]]
+        xyz_unitHemisphere[:,kk] = R_old2new * xyz_hem[:,kk]
     end
+
     return xyz_unitHemisphere, N_new
 end
 
-# -------------------------------------------------
-### Compute the rotation matrix to properly align the new hemisphere
-# -------------------------------------------------
-### Algorithm to compute a rotation matrix between two vectors
-v = cross(oldNormal, normal)
-skewSymmetricMat = [0 -v[3] v[2]; v[3] 0 -v[1]; -v[2] v[1] 0]
-R_old2new = [1 0 0; 0 1 0; 0 0 1] + skewSymmetricMat + skewSymmetricMat*skewSymmetricMat*(1 / (1 + dot(oldNormal,normal)))
-
-### Rotate old hemisphere to new position, centered about normal
-xyz_unitHemisphere = zeros(size(xyz_hem))
-for kk in 1:N_new
-    xyz_unitHemisphere[:,kk] = R_old2new * xyz_hem[:,kk]
-end
-
-return xyz_unitHemisphere, N_new
-end
 """
-    Generates a ring of N vectors with origin c offset by α degrees about central vector r
+    spherical_ring(c::Array, r::Array, α; N=100)
+
+Generates a ring of N vectors with origin c offset by α degrees about central vector r
 """
 function spherical_ring(c::Array, r::Array, α; N=100)
     ϕ = 90 - α
@@ -788,29 +819,29 @@ function spherical_ring(c::Array, r::Array, α; N=100)
     return r_ring
 end
 
-"""
-Calculate the ratio of Lagrange point distance from closest primary to distance between two primaries
-"""
-function gammaL(sys::System, Lpt::Int)
-    μ = sys.μ
+# """
+# Calculate the ratio of Lagrange point distance from closest primary to distance between two primaries
+# """
+# function gammaL(sys::System, Lpt::Int)
+#     μ = sys.μ
 
-    # poly1 = [1, -1*(3-μ), (3-2*μ),     -μ,      2*μ,     -μ];
-    # poly2 = [1,    (3-μ), (3-2*μ),     -μ,     -2*μ,     -μ];
-    # poly3 = [1,    (2+μ), (1+2*μ), -(1-μ), -2*(1-μ), -(1-μ)];
+#     # poly1 = [1, -1*(3-μ), (3-2*μ),     -μ,      2*μ,     -μ];
+#     # poly2 = [1,    (3-μ), (3-2*μ),     -μ,     -2*μ,     -μ];
+#     # poly3 = [1,    (2+μ), (1+2*μ), -(1-μ), -2*(1-μ), -(1-μ)];
 
-    poly1 = [    -μ,      2*μ,     -μ, (3-2*μ), -1*(3-μ), 1];
-    poly2 = [    -μ,     -2*μ,     -μ, (3-2*μ),    (3-μ), 1];
-    poly3 = [-(1-μ), -2*(1-μ), -(1-μ), (1+2*μ),    (2+μ), 1];
+#     poly1 = [    -μ,      2*μ,     -μ, (3-2*μ), -1*(3-μ), 1];
+#     poly2 = [    -μ,     -2*μ,     -μ, (3-2*μ),    (3-μ), 1];
+#     poly3 = [-(1-μ), -2*(1-μ), -(1-μ), (1+2*μ),    (2+μ), 1];
 
-    rt1 = roots(poly1)
-    rt2 = roots(poly2)
-    rt3 = roots(poly3)
+#     rt1 = roots(poly1)
+#     rt2 = roots(poly2)
+#     rt3 = roots(poly3)
 
-    Γ = zeros(3)
-    for i=1:5
-            if isreal(rt1[i]) Γ[1]=rt1[i]; end
-            if isreal(rt2[i]) Γ[2]=rt2[i]; end
-            if isreal(rt3[i]) Γ[3]=rt3[i]; end
-    end
-    γ = Γ[Lpt];
-end
+#     Γ = zeros(3)
+#     for i=1:5
+#         if isreal(rt1[i]) Γ[1]=rt1[i]; end
+#         if isreal(rt2[i]) Γ[2]=rt2[i]; end
+#         if isreal(rt3[i]) Γ[3]=rt3[i]; end
+#     end
+#     γ = Γ[Lpt];
+# end
