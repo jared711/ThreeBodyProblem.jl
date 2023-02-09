@@ -23,7 +23,6 @@ function R2BPdynamics(rv, prim::Body, t)  #make sure rv and μ are in km and km�
     return R2BPdynamics(rv, G*prim.m, t)
 end
 
-
 """
     R2BPdynamics!(rvdot, rv, μ, t)
 
@@ -37,7 +36,7 @@ end
 """
     R2BPdynamics!(rvdot, rv, prim::Body, t)
 
-In-place version of `R2BPdynamics!(rvdot, rv, prim::Body, t)`.
+In-place version of `R2BPdynamics(rvdot, rv, prim::Body, t)`.
 """
 function R2BPdynamics!(rvdot, rv, prim::Body, t)  #make sure rv and μ are in km and km³/s²
     rvdot[:] = R2BPdynamics(rv, prim, t)
@@ -375,83 +374,6 @@ function BCPdynamics!(rvdot, rv, sys::BicircularSystem, t)
 end
 
 
-"""
-    BCPstm(wdot, w, μ, m₃, n₃, t)
-
-Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
-normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
-matrix. `μ` {NON} is the BCP mass parameter and `m₃` {NON} and `n₃` {NON} are the normalized
-mass and mean motion of the tertiary body. `t` is time {NON}.
-"""
-function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
-    rv = w[1:6]
-    Φ = reshape(w[7:42],6,6)
-    x,y,z,vx,vy,vz = rv
-
-    a₃ = (1+m₃)^(1/3)/n₃^(2/3)
-    θ = (n₃-1)*t # This is changed from 1-n₃ so now θ will be negative for the Sun and positive for the Moon (BCP2)
-    x₃ =  a₃*cos(θ)
-    y₃ =  a₃*sin(θ) # I had this as negative before, as shown in the Gomez book
-
-    r₁ = sqrt(  (x+μ)^2 +      y^2 + z^2) # distance to m1, Larger Mass
-    r₂ = sqrt((x-1+μ)^2 +      y^2 + z^2) # distance to m2, smaller mass
-    r₃ = sqrt( (x-x₃)^2 + (y-y₃)^2 + z^2) # distance to m3, LARGEST MASS
-    r₁³ = r₁^3; r₂³ = r₂^3; r₃³ = r₃^3
-    r₁⁵ = r₁^5; r₂⁵ = r₂^5; r₃⁵ = r₃^5
-
-    g11 = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵) - m₃*(1/r₃³ - 3*(x-x₃)^2/r₃⁵)
-    g12 = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵ + 3*m₃*(x-x₃)*(y-y₃)/r₃⁵
-    # g13 = 0 # planar assumption
-    g13 = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵ + 3*m₃*(x-x₃)*z/r₃⁵
-    g22 = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵) - m₃*(1/r₃³ - 3*(y-y₃)^2/r₃⁵)
-    # g23 = 0 # planar assumption
-    g23 = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵ + 3*m₃*(y-y₃)*z/r₃⁵
-    # g33 = -(1-μ)/r₁³ - μ/r₂³ - m₃/r₃³ # planar assumption
-    g33 = -(1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵) - m₃*(1/r₃³ - 3*z^2/r₃⁵)
-
-    F = [  0   0   0  1   0   0 ;
-           0   0   0  0   1   0 ;
-           0   0   0  0   0   1 ;
-         g11 g12 g13  0   2   0 ;
-         g12 g22 g23 -2   0   0 ;
-         g13 g23 g33  0	  0   0 ]
-
-    Φdot = F*Φ
-    wdot[1:6] = BCPdynamics(rv,μ,m₃,n₃,t)
-    wdot[7:42] = reshape(Φdot, 36, 1)
-    return wdot
-end
-
-"""
-    BCPstm(wdot, w, μ, m₃, n₃, t)
-
-Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
-normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
-matrix, `sys` is the BCP system and `t` is time {NON}.
-"""
-function BCPstm(w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
-    return BCPstm(w, sys.mu, sys.m3, sys.n3 ,t)
-end
-
-"""
-    BCPstm!(wdot, w, μ, m₃, n₃, t)
-
-In-place version of `BCPstm(w, μ, m₃, n₃, t)`.
-"""
-function BCPstm!(wdot,w,μ,m₃,n₃,t) #Three body dynamics in Earth/Moon System
-    wdot[:] = BCPstm(w,μ,m₃,n₃,t)
-    return nothing
-end
-
-"""
-    BCPstm!(wdot, w, sys::BicircularSystem, t)
-
-In-place version of `BCPstm(w, sys::BicircularSystem, t)`.
-"""
-function BCPstm!(wdot,w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
-    wdot[:] = BCPstm(w,sys,t)
-    return nothing
-end
 
 """
 
@@ -469,7 +391,7 @@ function BCPdynamics2(rv, μ, m₃, n₃, t)
     # Xₑ = μ*cos(t);      Yₑ = μ*sin(t);      Zₑ = 0
     # Xₘ = (μ-1)*cos(t);  Yₘ = (μ-1)*sin(t);  Zₘ = 0
     # Xₛ = a₃*cos(n₃*t);  Yₛ = a₃*sin(n₃*t);  Zₛ = 0
-
+    
     a₃ = (1+m₃)^(1/3)/n₃^(2/3)
     θ = (n₃-1)*t # This is changed from 1-n₃ so now θ will be negative for the Sun and positive for the Moon (BCP2)
     x₃ = 1 - μ + a₃*cos(θ)
@@ -516,3 +438,85 @@ function BCPdynamics2!(rvdot, rv, sys::BicircularSystem, t)
     rvdot[:] = BCPdynamics2(rv, sys, t)
     return nothing
 end
+
+
+"""
+    BCPstm(w, μ, m₃, n₃, t)
+
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
+normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
+matrix. `μ` {NON} is the BCP mass parameter and `m₃` {NON} and `n₃` {NON} are the normalized
+mass and mean motion of the tertiary body. `t` is time {NON}.
+"""
+function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
+    rv = w[1:6]
+    Φ = reshape(w[7:42],6,6)
+    x,y,z,vx,vy,vz = rv
+
+    a₃ = (1+m₃)^(1/3)/n₃^(2/3)
+    θ = (n₃-1)*t # This is changed from 1-n₃ so now θ will be negative for the Sun and positive for the Moon (BCP2)
+    x₃ =  a₃*cos(θ)
+    y₃ =  a₃*sin(θ) # I had this as negative before, as shown in the Gomez book
+    
+    r₁ = sqrt(  (x+μ)^2 +      y^2 + z^2) # distance to m1, Larger Mass
+    r₂ = sqrt((x-1+μ)^2 +      y^2 + z^2) # distance to m2, smaller mass
+    r₃ = sqrt( (x-x₃)^2 + (y-y₃)^2 + z^2) # distance to m3, LARGEST MASS
+    r₁³ = r₁^3; r₂³ = r₂^3; r₃³ = r₃^3
+    r₁⁵ = r₁^5; r₂⁵ = r₂^5; r₃⁵ = r₃^5
+    
+    g11 = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵) - m₃*(1/r₃³ - 3*(x-x₃)^2/r₃⁵)
+    g12 = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵ + 3*m₃*(x-x₃)*(y-y₃)/r₃⁵
+    # g13 = 0 # planar assumption
+    g13 = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵ + 3*m₃*(x-x₃)*z/r₃⁵
+    g22 = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵) - m₃*(1/r₃³ - 3*(y-y₃)^2/r₃⁵)
+    # g23 = 0 # planar assumption
+    g23 = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵ + 3*m₃*(y-y₃)*z/r₃⁵
+    # g33 = -(1-μ)/r₁³ - μ/r₂³ - m₃/r₃³ # planar assumption
+    g33 = -(1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵) - m₃*(1/r₃³ - 3*z^2/r₃⁵)
+
+    F = [  0   0   0  1   0   0 ;
+    0   0   0  0   1   0 ;
+            0   0   0  0   0   1 ;
+            g11 g12 g13  0   2   0 ;
+            g12 g22 g23 -2   0   0 ;
+            g13 g23 g33  0	  0   0 ]
+
+    Φdot = F*Φ
+    wdot = zeros(42)
+    wdot[1:6] = BCPdynamics(rv,μ,m₃,n₃,t)
+    wdot[7:42] = reshape(Φdot, 36, 1)
+    return wdot
+end
+
+"""
+    BCPstm(w, μ, m₃, n₃, t)
+
+Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the
+normalized Bicircular Four-Body Problem (BCP). `vec(Φ)` is the vectorized state transition
+matrix, `sys` is the BCP system and `t` is time {NON}.
+"""
+function BCPstm(w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
+    return BCPstm(w, sys.mu, sys.m3, sys.n3 ,t)
+end
+
+"""
+    BCPstm!(wdot, w, μ, m₃, n₃, t)
+    
+In-place version of `BCPstm(w, μ, m₃, n₃, t)`.
+"""
+function BCPstm!(wdot,w,μ,m₃,n₃,t) #Three body dynamics in Earth/Moon System
+    wdot[:] = BCPstm(w,μ,m₃,n₃,t)
+    return nothing
+end
+
+"""
+    BCPstm!(wdot, w, sys::BicircularSystem, t)
+    
+In-place version of `BCPstm(w, sys::BicircularSystem, t)`.
+"""
+function BCPstm!(wdot,w,sys::BicircularSystem,t) #Three body dynamics in Earth/Moon System
+    wdot[:] = BCPstm(w,sys,t)
+    return nothing
+end
+
+#TODO: Should I make t=0 the default for all these dynamics functions?

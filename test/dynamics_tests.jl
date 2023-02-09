@@ -10,44 +10,51 @@ rv_dim = [1e4, 0, 0, 0, 1, 0]
 t = 0
 
 rvdot = zeros(6)
-@test CR3BPdynamics!(rvdot, rv, sys, t) == nothing
+@test isnothing(CR3BPdynamics!(rvdot, rv, sys, t))
 @test rvdot == CR3BPdynamics(rv, sys, t)
 
-rvdot = zeros(6)
-@test CR3BPdynamics!(rvdot, rv_dim, p, t) == nothing
+@test isnothing(CR3BPdynamics!(rvdot, rv_dim, p, t))
 @test rvdot == CR3BPdynamics(rv_dim, p, t)
 
-rvdot = zeros(6)
-@test CR3BPdynamics!(rvdot, rv_dim, sys.μ, t) == nothing
+@test isnothing(CR3BPdynamics!(rvdot, rv_dim, sys.μ, t))
 @test rvdot == CR3BPdynamics(rv_dim, sys.μ, t)
 
-rvdot = zeros(6)
-@test CR3BPinert!(rvdot, rv, sys, t) == nothing
+@test isnothing(CR3BPinert!(rvdot, rv, sys, t))
+@test isnothing(CR3BPinert!(rvdot, rv, sys.μ, t))
 @test rvdot == CR3BPinert(rv, sys, t)
 
-rvdot = zeros(6)
-@test CR3BPinert!(rvdot, rv_dim, p, t) == nothing
+@test isnothing(CR3BPinert!(rvdot, rv_dim, p, t))
 @test rvdot == CR3BPinert(rv_dim, p, t)
 
 wdot = zeros(42)
-w = [reshape(I(6),36,1); rv]
-@test CR3BPstm!(wdot, w, sys, t) == nothing
+w = [rv; reshape(I(6),36,1)]
+@test isnothing(CR3BPstm!(wdot, w, sys.μ, t))
+@test isnothing(CR3BPstm!(wdot, w, sys, t))
 @test wdot == CR3BPstm(w, sys, t)
 
-rvdot = zeros(6)
-@test R2BPdynamics!(rvdot, rv_dim, sys.prim, t) == nothing
+@test isnothing(R2BPdynamics!(rvdot, rv_dim, sys.prim, t))
 @test rvdot == R2BPdynamics(rv_dim, sys.prim, t)
 
-rvdot = zeros(6)
-@test R2BPdynamics!(rvdot, rv_dim, sys.μ₁, t) == nothing
+@test isnothing(R2BPdynamics!(rvdot, rv_dim, sys.μ₁, t))
 @test rvdot == R2BPdynamics(rv_dim, sys.μ₁, t)
 
-rvdot = zeros(6)
 n = 1e-3
-@test CWdynamics!(rvdot, rv, n, t) == nothing
+@test isnothing(CWdynamics!(rvdot, rv, n, t))
 @test rvdot == CWdynamics(rv, n, t)
 
 bisys = earth_moon_sun()
-rvdot = zeros(6)
-@test BCPdynamics!(rvdot, rv, bisys, t) == nothing
+@test isnothing(BCPdynamics!(rvdot, rv, bisys, t))
+@test isnothing(BCPdynamics!(rvdot, rv, bisys.μ, bisys.m3, bisys.n3, t))
 @test rvdot == BCPdynamics(rv, bisys, t)
+
+@test isnothing(BCPstm!(wdot, w, bisys.μ, bisys.m3, bisys.n3, t))
+@test isnothing(BCPstm!(wdot, w, bisys, t))
+@test wdot == BCPstm(w, bisys, t)
+
+@test isnothing(BCPdynamics2!(rvdot, rv, bisys, t))
+@test isnothing(BCPdynamics2!(rvdot, rv, bisys.μ, bisys.m3, bisys.n3, t))
+@test rvdot == BCPdynamics2(rv, bisys, t)
+
+@test isnothing(BCPstm!(wdot, w, bisys.μ, bisys.m3, bisys.n3, t))
+@test isnothing(BCPstm!(wdot, w, bisys, t))
+@test wdot == BCPstm(w, bisys, t)

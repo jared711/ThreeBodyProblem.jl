@@ -1,6 +1,3 @@
-# furnsh("src/kernels/de440s.bsp")
-# furnsh("src/kernels/naif0012.tls")
-
 """
     rot2inert(rv, θ, μ; origin=:barycenter)
 
@@ -8,22 +5,26 @@ Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to i
 frame in the normalized CR3BP given time `θ` {NON} and mass parameter `μ` {NON}.
 """
 function rot2inert(rv, θ, μ; origin=:barycenter)
-    if origin == :barycenter
-    elseif origin == :prim
-        rv -= [-μ, 0, 0, 0, 0, 0]
-    elseif origin == :sec
-        rv -= [1-μ, 0, 0, 0, 0, 0]
-    end
-    cθ, sθ = cos(θ), sin(θ)
-    A =  [cθ -sθ  0;
+    cθ, sθ = cos(θ), sin(θ) # precompute sines and cosines
+    A =  [cθ -sθ  0; # rotation matrix
           sθ  cθ  0;
            0   0  1]
-    B = [-sθ -cθ  0;
+    B = [-sθ -cθ  0; # derivative of rotation matrix
           cθ -sθ  0;
            0   0  0]
-    C = [A zeros(3,3);
+    C = [A zeros(3,3); # full rotation matrix
          B A]
-    return C*rv
+    if origin == :barycenter # default
+        rv_offset = zeros(6) # no shift
+    elseif origin == :prim # primary
+        rv_offset = -μ*[cθ, sθ, 0, -sθ, cθ, 0]
+    elseif origin == :sec # secondary
+        rv_offset = (1-μ)*[cθ, sθ, 0, -sθ, cθ, 0]
+    else
+        error("origin should be :barycenter, :prim, or :sec")
+    end
+    rv = C*rv - rv_offset # rotate and shift
+    return rv
 end
 
 """
@@ -37,32 +38,37 @@ rot2inert(rv, θ, sys::System; origin=:barycenter) = rot2inert(rv, θ, sys.μ, o
 """
     rot2inert(rv, θ, p::Array; origin=:barycenter)
 
-Convert state vector `rv = [r; v]` {NON; NON} from rotating (synodic) frame to inertial
+Convert state vector `rv = [r; v]` {km; km/s} from rotating (synodic) frame to inertial
 frame in the non-normalized CR3BP given time `θ` {NON} and p = [μ₁;μ₂;d]`
-{km³/s²; km³/s²; km}, which contains the gravitational parameters of the first and second
-primary bodies as well as the distance between them.
+{km³/s²; km³/s²; km}, which contains the gravitational parameters of the primary and secondary
+bodies as well as the distance between them.
 """
 function rot2inert(rv, θ, p::Array; origin=:barycenter)
     μ₁,μ₂,d = p # parameters
-
-    if origin == :barycenter
-    elseif origin == :prim
-        rv -= [-d*μ₂/(μ₁ + μ₂), 0, 0, 0, 0, 0]
-    elseif origin == :sec
-        rv -= [d*(1-μ₂/(μ₁ + μ₂)), 0, 0, 0, 0, 0]
-    end
+    μ = μ₂/(μ₁ + μ₂) # normalized mass ratio
 
     ωₛ = sqrt((μ₁ + μ₂)/d^3);
     cθ, sθ = cos(ωₛ*θ), sin(ωₛ*θ)
     A = [cθ -sθ  0;
          sθ  cθ  0;
           0   0  1]
-    B = [-sθ -cθ  0;
-          cθ -sθ  0;
-           0   0  0]
+    B = ωₛ*[-sθ -cθ  0;
+             cθ -sθ  0;
+              0   0  0]
     C = [A zeros(3,3);
          B A]
-    return C*rv
+
+    if origin == :barycenter # default
+        rv_offset = zeros(6) # no shift
+    elseif origin == :prim # primary
+        rv_offset = -d*μ*[cθ, sθ, 0, -sθ*ωₛ, cθ*ωₛ, 0]
+    elseif origin == :sec # secondary
+        rv_offset = d*(1-μ)*[cθ, sθ, 0, -sθ*ωₛ, cθ*ωₛ, 0]
+    else
+        error("origin should be :barycenter, :prim, or :sec")
+    end
+    rv = C*rv - rv_offset # rotate and shift
+    return rv
 end
 
 """
@@ -90,7 +96,7 @@ end
 
 In-place version of rot2inert(rv, θ, p::Array)
 """
-function rot2inert!(rv, θ, p::Array; origin=0)
+function rot2inert!(rv, θ, p::Array; origin=:barycenter)
     rv[1:6] = rot2inert(rv, θ, p, origin=origin)
     return nothing
 end
@@ -112,12 +118,18 @@ function inert2rot(rv, t, μ; origin=:barycenter)
     C = [A zeros(3,3);
          B A]
     if origin == :barycenter
+        rv_offset = zeros(6) # no shift
     elseif origin == :prim
-        rv += [-μ, 0, 0, 0, 0, 0]
+        rv_offset = -μ*[ct, st, 0, -st, ct, 0]
+        #  [A; B]*[-μ,0,0] # shift from primary centered
     elseif origin == :sec
-        rv += [1-μ, 0, 0, 0, 0, 0]
+        rv_offset = (1-μ)*[ct, st, 0, -st, ct, 0]
+        # [A;B]*[1-μ,0,0] # shift from secondary centered
+    else
+        error("origin should be :barycenter, :prim, or :sec")
     end
-    return C*rv
+    rv = C*(rv + rv_offset) # shift and rotate
+    return rv
 end
 
 """
@@ -133,8 +145,8 @@ inert2rot(rv, t, sys::System; origin=:barycenter) = inert2rot(rv, t, sys.μ, ori
 Inertial frame to rotating (synodic) frame
 """
 function inert2rot(rv, t, p::Array; origin=:barycenter)
-# function S2I!(rv,t,p::Array)
     μ₁,μ₂,d = p # parameters
+    μ = μ₂/(μ₁ + μ₂) # normalized mass ratio
 
     ωₛ = sqrt((μ₁ + μ₂)/d^3);
     ct, st = cos(ωₛ*t), sin(ωₛ*t)
@@ -142,20 +154,23 @@ function inert2rot(rv, t, p::Array; origin=:barycenter)
         -st  ct  0;
           0   0  1]
     # A = rotz(ωₛ*t)
-    B = [-st  ct  0;
-         -ct -st  0;
-           0   0  0]
+    B = ωₛ*[-st  ct  0;
+            -ct -st  0;
+              0   0  0]
     C = [A zeros(3,3);
          B A]
 
     if origin == :barycenter
+        rv_offset = zeros(6) # no shift
     elseif origin == :prim
-        rv += [-d*μ₂/(μ₁ + μ₂), 0, 0, 0, 0, 0]
+        rv_offset = -d*μ*[ct, st, 0, -st*ωₛ, ct*ωₛ, 0]
     elseif origin == :sec
-        rv += [d*(1-μ₂/(μ₁ + μ₂)), 0, 0, 0, 0, 0]
+        rv_offset = d*(1-μ)*[ct, st, 0, -st*ωₛ, ct*ωₛ, 0]
+    else
+        error("origin should be :barycenter, :prim, or :sec")
     end
-
-    return C*rv
+    rv = C*(rv + rv_offset) # shift and rotate
+    return rv
 end
 
 """
@@ -184,7 +199,7 @@ end
 
 In-place version of `inert2rot(rv, t, p::Array)`.
 """
-function inert2rot!(rv, t, p::Array; origin=0)
+function inert2rot!(rv, t, p::Array; origin=:barycenter)
     rv[1:6] = inert2rot(rv, t, p, origin=origin)
     return nothing
 end
@@ -243,6 +258,8 @@ end
 
 """
     eci2sci(rv_eci, rv_sun_eci; ε=23.43929)
+
+# converts state from Earth-Centered Inertial (ECI) frame to Sun-Centered Inertial (SCI) frame
 """
 function eci2sci(rv_eci, rv_sun_eci; ε=23.439292)
     R = rotx(-ε)
@@ -253,6 +270,8 @@ end
 
 """
     sci2eci(rv_sci, rv_sun_eci; ε=23.439292)
+
+# converts state from Sun-Centered Inertial (SCI) frame to Earth-Centered Inertial (ECI) frame
 """
 function sci2eci(rv_sci, rv_sun_eci; ε=23.439292)
     R = rotx(ε)
@@ -263,7 +282,8 @@ end
 
 """
     enu2ecef(rv_enu, ϕ, λ, h=0; geodetic=true, ang_unit=:deg)
-Converts state from ENU frame to inertial frame
+
+Converts state from ENU frame to Earth-Centered Earth-Fixed (ECEF) frame. Latitude `ϕ` and longitude `λ` give the location of the ENU frame on the surface of the Earth
 """
 function enu2ecef(rv_enu, ϕ, λ, h=0; geodetic=true, ang_unit::Symbol=:deg, e_earth=0.0818, r_earth=6.378136e3)
     d = h + r_earth # [km] radius of the earth plus altitude
@@ -292,6 +312,7 @@ end
 
 """
     ecef2enu(rv_ecef, ϕ, λ, h=0; geodetic=true, ang_unit::Symbol=:deg, e_earth=0.0818, r_earth=6.378136e3)
+
 Converts state from ENU frame to inertial frame
 """
 function ecef2enu(rv_ecef, ϕ, λ, h=0; geodetic=true, ang_unit::Symbol=:deg, e_earth=0.0818, r_earth=6.378136e3)
@@ -321,6 +342,8 @@ end
 
 """
     latlon2cart(ϕ, λ, d; ang_unit::Symbol=:deg)
+
+returns position vector in cartesian coordinates from latitude ϕ, longitude λ, and distance from origin d
 """
 function latlon2cart(ϕ, λ, d; ang_unit::Symbol=:deg)
     if ang_unit == :rad
@@ -335,15 +358,16 @@ end
 
 """
     cart2latlon(r::Array)
+
+returns latitude ϕ, longitude λ, and distance from origin d
 """
-function cart2latlon(r::Array, ang_unit::Symbol=:deg)
-    x,y,z = r
-    xy = sqrt(x^2 + y^2)
-    d = norm(r)
-    if ang_unit == :rad
+function cart2latlon(r::Array; ang_unit::Symbol=:deg)
+    x,y,z = r # pull out components
+    d = norm(r) # compute magnitude
+    if ang_unit == :rad # use default functions
         ϕ = asin(z/d)
         λ = atan(y,x)
-    elseif ang_unit == :deg
+    elseif ang_unit == :deg # use deg functions
         ϕ = asind(z/d)
         λ = atand(y,x)
     else
@@ -356,20 +380,65 @@ end
 # | /  lon
 # |/------- x
 
-function eci2CR3BP()
+"""
+    azel2cart(az, el, d=1; ang_unit::Symbol=:deg)
+
+Convert azimuth and elevation angles to cartesian coordinates
+
+See also: [`cart2azel`](@ref)
+
+# Examples
+```jldoctest
+julia> azel2cart(90, 90, ang_unit=:deg)
+[0,0,1]
+```
+"""
+function azel2cart(az, el, d=1; ang_unit::Symbol=:deg)
+    if ang_unit == :deg
+    elseif ang_unit == :rad
+        az = rad2deg(az)
+        el = rad2deg(el)
+    else
+        error("ang_unit should be :rad or :deg")
+    end
+
+    # vector in East/North/Up coordinates
+    r_ENU = [d*cosd(el)*sind(az);
+             d*cosd(el)*cosd(az);
+             d*sind(el)];
+
+    return r_ENU
 end
 
-function CR3BP2eci()
+"""
+    cart2azel(r_ENU; ang_unit::Symbol=:deg)
+
+Convert cartesian coordinates from ENU to azimuth, elevation, and magnitude
+
+See also: [`azel2cart2`](@ref)
+
+# Examples
+```jldoctest
+julia> cart2azel([1,0,0], ang_unit=:deg)
+90
+```
+"""
+function cart2azel(r_ENU; ang_unit::Symbol=:deg)
+    d = norm(r_ENU)
+    el = asind(r_ENU[3]/d)
+    az = atand(r_ENU[1], r_ENU[2])
+
+    if ang_unit == :deg
+    elseif ang_unit == :rad
+        az = deg2rad(az)
+        el = deg2rad(el)
+    else
+        error("ang_unit should be :rad or :deg")
+    end
+
+    return az, el, d
 end
 
-function CR3BP2cart()
-end
-
-function sci2CR3BP()
-end
-
-function CR3BP2sci()
-end
 
 """
     dimensionalize(rv, sys::System)
