@@ -23,6 +23,8 @@ p = plot(sys);
 @test !isempty(p)
 p = plot(sys,scaled=true);
 @test !isempty(p)
+p = plot(sys,center=[1,0,0]);
+@test !isempty(p)
 @test_throws ErrorException plot(sys,:planar=>false); # ("Cannot convert System to series data for plotting")
 # RecipesBase method
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(), sys))
