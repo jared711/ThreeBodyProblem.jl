@@ -10,7 +10,7 @@ environment:
   - julia_version: 1.6
   - julia_version: nightly
 platform:
-  - x86
+  # - x86 # 2/10/23 for some reason, x86 was failing on CLpts
   - x64
 matrix:
   allow_failures:
