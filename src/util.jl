@@ -439,7 +439,7 @@ which are the gravitational parameters of the first and second primary bodies
 """
 function computeCLpts(p::Array)
     Lpts = computeLpts(p)
-    CLpts = [computeC(Lpts[i],p) for i in 1:eachindex(Lpts)]
+    CLpts = [computeC(Lpts[i],p) for i ∈ eachindex(Lpts)]
     return CLpts
 end
 
