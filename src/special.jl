@@ -1,4 +1,5 @@
-
+using LinearAlgebra
+using OrdinaryDiffEq
 
 """
     invariant_manifolds(sys::System, rv0, T; tf=1., nPts=20, α=1e-6, reltol=1e-12, integrator=TsitPap8())
@@ -154,16 +155,132 @@ end
 """
 
 """
-   differential_corrector_QPO()
+   fourier_operator(N)
+
+Returns the fourier operator D, the vector of indices k, and the vector of angles θ
+"""
+function fourier_operator(N)
+   if iseven(N);  error("N must be odd"); end
+
+   θ = 2π*(0:N-1)/N # Angles for the invariant circle
+   k = Int(-(N-1)/2):Int((N-1)/2) # Vector of integers from -(N-1)/2 to (N-1)/2. N is odd, so (N-1)/2 is an integer.
+   D = 1/N*exp.(-im*k*θ') # D is a constant matrix, as k and θ won't change
+   return D, k, θ
+end
+
+"""
+   rotation_operator(ρ, N)
+
+Returns the rotation operator R(ρ) and its derivative ∂R/∂ρ(ρ) as well as Q(ρ) and ∂Q/∂ρ(ρ)
+"""
+function rotation_operator(ρ, N)
+   D, k = fourier_operator(N) # D is the fft matrix and k is a vector of indices
+
+   Q(ρ) = Diagonal(exp.(-im*k*ρ)) # Q is the rotation operator in the fourier domain. It's a diagonal matrix made up of exponential terms
+   # since multiplying by e^(ikρ) rotates a point by kρ radians, we use e^(-ikρ) to rotate backwards by kρ radians.
+   R(ρ) = real(inv(D)*Q(ρ)*D) # R is the rotation operator in the real domain. We use the similarity transform to convert it to the real domain.
+   # We need to use real() to make sure each component is real. Multiplying UT by R(ρ) rotates the invariant circle by ρ radians
+   ∂Q_∂ρ(ρ) = Diagonal(-im*k.*exp.(-im*k*ρ))
+   ∂R_∂ρ(ρ) = real(inv(D)*∂Q_∂ρ(ρ)*D)
+
+   return R, Q, ∂Q_∂ρ, ∂R_∂ρ, D
+end
+
+
+""" strob_map(rv₀, u₀, sys::System)
+   
+Given a base point rv₀ on a periodic orbit and and invariant circle u₀, returns the stroboscopic map uTR and the Jacobi constant
+"""
+function strob_map(rv₀, u, T, ρ, sys::System)
+   N = length(u) # N is the number of points used in the invariant circle
+   C = sum([computeC(rv₀+u[i],sys) for i in 1:N])/N # Compute Jacobi Constant of the invariant circle
+
+   # First we integrate the orbit
+   Φ₀ = I(6) # Initialization of the STM, Φ₀ = I
+   w₀ = [rv₀; reshape(Φ₀,36,1)] # Reshape the matrix into a vector and append it to the state vector
+   tspan = (0.,T) # integrate from 0 to T₀
+   prob_halo = ODEProblem(CR3BPstm!,w₀,tspan,sys) # CR3BPstm! is our in-place dynamics function for state and STM
+   function prob_func(prob, i, repeat) # function that defines the initial condition for each trajectory
+      remake(prob, u0=[rv₀+u[i]; reshape(Φ₀,36,1)]) # perturb rv₀ by the ith point of the invariant circle and use that as the initial condition
+   end # NOTE: Do not get confused! ODEProblems have an field called "u0" (e.g. prob_halo.u0) and the solved problems have a field called "u" (e.g. halo.u). Don't confuse these with the u₀ and u variables that we are defining here.
+   prob_qpo = EnsembleProblem(prob_halo, prob_func=prob_func) # ODE problem with an ensemble of trajectories
+   qpo = solve(prob_qpo, TsitPap8(), trajectories=N, abstol=1e-12, reltol=1e-12) # solve the problem
+
+   uT = [qpo[i].u[end][1:6]-rv₀ for i in 1:N] # Invariant circle after integrating (make sure to subtract the base point rv₀)
+   UT = reduce(vcat,uT') # UT is an Nx6 matrix form of uT
+
+   R,_,_,_ = rotation_operator(ρ, N) # make sure to use the comma so R doesn't become an array of functions
+
+   UTR = R(ρ)*UT # Rotate the integrated invariant circle back by ρ radians
+   uTR = [UTR[i,:] for i in 1:N] # Convert back to a vector of vectors
+
+   return uTR, C, qpo, UT
+end
+
+"""
+   phase_constraints!(J, dγ, u, rv₀, u₀, T₀, ρ₀, N, sys)
+
+Appends the phase constraints for the invariant circle
+"""
+function add_phase_constraints(J, dγ, u, rv₀, u₀, T₀, ρ₀, N, sys)
+   n = length(rv₀)
+   # Phase constraints
+   D, k, θ = fourier_operator(N) # Compute the fast fourier transform matrix
+   C0_tilde = D*reduce(vcat,u₀') # convert to an Nx6 matrix
+   ∂u₀_∂θ₁ = im.*exp.(im.*θ*k')*Diagonal(k)*C0_tilde # Derivative of the initial invariant circle with respect to θ₁
+   if maximum(imag(∂u₀_∂θ₁)) > eps() # If the derivative is complex, then we have a problem
+      error("The derivative of the initial invariant circle with respect to θ₁ is complex")
+   end
+   ∂u₀_∂θ₁ = real(∂u₀_∂θ₁) # Enforce the derivative is real
+   
+   U̇₀ = zeros(N,n)
+   for i = 1:N
+      U̇₀[i,:] = CR3BPdynamics(rv₀ + u₀[i],sys,0)
+   end
+   ∂u₀_∂θ₀ = T₀/2π .* (U̇₀ - ρ₀/T₀.*∂u₀_∂θ₁) # Derivative of the initial invariant circle with respect to θ₀
+   
+   ∂u₀_∂θ₀ = reshape(∂u₀_∂θ₀',1,n*N) # Convert to a row vector
+   ∂u₀_∂θ₁ = reshape(∂u₀_∂θ₁',1,n*N) # Convert to a row vector
+
+   J = [J;        # Add the phase constraints to the Jacobian
+   ∂u₀_∂θ₀ 0 0;
+   ∂u₀_∂θ₁ 0 0]
+
+   append!(dγ,∂u₀_∂θ₀*reduce(vcat,u)) # Add the first phase constraint to the error vector
+   append!(dγ,∂u₀_∂θ₁*reduce(vcat,u)) # Add the second phase constraint to the error vector
+
+   return J, dγ
+end
+
+"""
+   add_state_constraints!(J, dγ, u; constraints=[])
+
+add the state constraints to the Jacobian and error vector
+"""
+function add_state_constraints(J, dγ, u; constraints=[])
+   N = length(u)
+   n = length(u[1])
+   for j in constraints
+      row = zeros(1,n*N+2) # +2 for the time period and the phase constraint
+      row[j] = 1 # Put a 1 in the row of zeros
+      J = [J;row] # Add the row to the Jacobian
+      append!(dγ,0) # Add a zero to the error vector
+   end
+   return J, dγ
+end
+
+
+"""
+   differential_corrector_QPO(sys::System, rv₀, u₀, T₀, ρ₀; max_iter=10, plot_on=false, ϵ=1e-6, constraint::Symbol=:C)
 
 Differential corrector for quasi-periodic orbits QPO problem. 
 Takes in a System sys, periodic orbit state rv₀, invariant circle.
 Returns the corrected state vector and the time period T.
 """
-function differential_corrector_QPO(sys::System, rv₀, u₀, ρ₀, T₀; max_iter=10, plot_on=false, ϵ=1e-6, constraint::Symbol=:C)
+function differential_corrector_QPO(sys::System, rv₀, u₀, T₀, ρ₀; max_iter=10, plot_on=false, ϵ=1e-6, constraint::Symbol=:C)
    u = u₀ # u₀ is the invariant circle for which the phase constraint will be enforced
-   ρ = ρ₀ # Initial guess at the rotation number of the QPO
    T = T₀ # Initial guess at the period of the QPO
+   ρ = ρ₀ # Initial guess at the rotation number of the QPO
    
    N = length(u) # Number of points along invariant circle 
    if iseven(N);  @error "N must be an odd number";   end # Should be an odd number
@@ -173,44 +290,31 @@ function differential_corrector_QPO(sys::System, rv₀, u₀, ρ₀, T₀; max_i
    C₀ = computeC(rv₀,sys) # Jacobi constant of central orbit
    C = sum([computeC(rv₀+u[i],sys) for i in 1:N])/N # Compute the average Jacobi constant across the invariant circle
 
-   Φ₀ = I(6) # initial condition for STM
-   w₀ = [rv₀; reshape(Φ₀,36,1)] # Reshape the matrix into a vector and append it to the state vector
-   tspan = (0.,T) # integrate from 0 to T
-
-   prob_halo = ODEProblem(CR3BPstm!,w₀,tspan,sys) # Create the ODEProblem
-
-   # plot_iter = plot(u,legend=true,label="u₀"); # Plot the initial guess of the invariant circle
-
-   θ = 2π*(0:N-1)/N # Angles for the invariant circle
-   k = Int(-(N-1)/2):Int((N-1)/2) # Vector of integers from -(N-1)/2 to (N-1)/2. N is odd, so (N-1)/2 is an integer.
-   D = 1/N*exp.(-im*k*θ') # D is a constant fast fourier transform matrix, as k and θ won't change
-   Q(ρ) = Diagonal(exp.(-im*k*ρ)) # Q is the rotation operator in the fourier domain. It's a diagonal matrix made up of exponential terms
-   R(ρ) = real(inv(D)*Q(ρ)*D) # R is the rotation operator in the real domain. We use the similarity transform to convert it to the real domain.
-
+   uTRs = []
    us = [u]
-
+   Cs = [C]
    # while err > ϵ
-   for iter = 1:max_iter
+   R, _, _, ∂R_∂ρ = rotation_operator(ρ,N) # ∂R_∂ρ is the fourth output from the rotation_operator function
+   
+   for _ in 1:max_iter
+      # First we perform the stroboscopic mapping
+      uTR, C, qpo, UT = strob_map(rv₀, u, T, ρ, sys) # uTR is the invariant circle after the stroboscopic map
+      push!(uTRs,uTR) # Save the invariant circle after the stroboscopic map
 
-      function prob_func(prob, i, repeat)
-         remake(prob, u0=[rv₀+u[i]; reshape(Φ₀,36,1)]) # perturb rv₀ by the ith point of the invariant circle and use that as the initial condition
-      end # NOTE: Do not get confused! ODEProblems have an field called "u₀" (e.g. prob_halo.u₀) and the solved problems have a field called "u" (e.g. halo.u). Don't confuse these with the u₀ and u variables that we are defining here.
-      prob_qpo = EnsembleProblem(prob_halo, prob_func=prob_func) # ODE problem with an ensemble of trajectories
-      qpo = solve(prob_qpo, trajectories=N, abstol=1e-12, reltol=1e-12) # solve the problem    
-      uT = [qpo[i].u[end][1:6]-rv₀ for i in 1:N] # Invariant circle after integrating
-      UT = reduce(vcat,uT') # convert to a Nx6 matrix
-      UTR = R(ρ)*UT # Rotate the integrated invariant circle back by ρ radians
-      uTR = [UTR[i,:] for i in 1:N] # Convert back to a vector of N vectors
-      
       u_err = uTR - u # Compute the error between the initial and integrated/rotated invariant circles
       err = norm(u_err)
-      if err < ϵ # If the error is small enough, we're done
-         break
+      if err < ϵ; # If the error is small enough, we're done
+         @info "CONVERGED Differential corrector error = $err"
+         break;
+      else
+         @info "Differential corrector error = $err"
       end
 
+      # The error vector serves as our constraint. We want to drive dγ to zero.
       dγ = [reduce(vcat,u_err); # reduce(vcat,u_err) turns u_err into one big long vector instead of a vector of vectors 
-                     C - C₀]
-         
+                        C - C₀]
+                        
+      # The next step is to compute the Jacobian of the stroboscopic map with respect to the initial invariant circle u, rotation number ρ, and period T
       # Let's start with J₁ = ∂(uTR-u₀)/∂u
       Φ_tilde = zeros(n*N,n*N)
       for i = 1:N
@@ -220,18 +324,17 @@ function differential_corrector_QPO(sys::System, rv₀, u₀, ρ₀, T₀; max_i
       ∂uTR_∂u = kron(R(ρ),I(6))*Φ_tilde # Compute the derivative of the integrated/rotated invariant circle with respect to the initial invariant circle (u₀) 
       J₁ = ∂uTR_∂u - I(n*N) # We subtract the identity because we really want ∂(uTR-u)/∂u
 
-      # Next  J₂ = ∂uTR/∂ρ
-      ∂Q_∂ρ(ρ) = Diagonal(-im*k.*exp.(-im*k*ρ)) # Compute the derivative of the rotation operator in the Fourier domain
-      J₂ = real(inv(D)*∂Q_∂ρ(ρ)*D)*UT # Compute the derivative of the rotation operator in the real domain
-      J₂ = reshape( J₂',n*N,1) # Convert to a column vector
-
-      # Next  J₃ = ∂uTR/∂T
-      J₃ = zeros(n*N,1) # column vector of size n*N
+      # Next  J₂ = ∂uTR/∂T
+      J₂ = zeros(n*N,1) # column vector of size n*N
       for i = 1:N
          idx = (i-1)*n + 1:i*n
          ẋ, ẏ, ż, ẍ, ÿ, z̈ = CR3BPdynamics(rv₀ + uTR[i],sys,0) # don't forget to add rv₀ to uTR[i]
-         J₃[idx] = [ẋ, ẏ, ż, ẍ, ÿ, z̈] # The derivative with respect to time comes right from the equations of motion
+         J₂[idx] = [ẋ, ẏ, ż, ẍ, ÿ, z̈] # The derivative with respect to time comes right from the equations of motion
       end
+      
+      # Next  J₃ = ∂uTR/∂ρ
+      J₃ = ∂R_∂ρ(ρ)*UT # Compute the derivative of the rotation operator in the real domain
+      J₃ = reshape(J₃',n*N,1) # Convert to a column vector
 
       # Finally J₄ = ∂C/∂u
       J₄ = zeros(1,n*N) # row vector of size n*N
@@ -244,54 +347,29 @@ function differential_corrector_QPO(sys::System, rv₀, u₀, ρ₀, T₀; max_i
          J₄[idx] = [2Ωx, 2Ωy, 2Ωz, -2ẋ, -2ẏ, -2ż]/N # We divide by N because we want the derivative of C_avg with respect to u
       end
 
-      # Phase constraints
-      C0_tilde = D*reduce(vcat,u₀') # convert to an Nx6 matrix
-      ∂u₀_∂θ₁ = im.*exp.(im.*θ*k')*Diagonal(k)*C0_tilde # Derivative of the initial invariant circle with respect to θ₁
-      if maximum(imag(∂u₀_∂θ₁)) > eps() # If the derivative is complex, then we have a problem
-         error("The derivative of the initial invariant circle with respect to θ₁ is complex")
-      end
-      ∂u₀_∂θ₁ = real(∂u₀_∂θ₁) # Enforce the derivative is real
+      J = [J₁  J₂  J₃;
+           J₄   0   0];
 
-      U̇₀ = zeros(N,n)
-      for i = 1:N
-         U̇₀[i,:] = CR3BPdynamics(rv₀ + u₀[i],sys,0)
-      end
-      ∂u₀_∂θ₀ = T₀/2π .* (U̇₀ - ρ₀/T₀.*∂u₀_∂θ₁) # Derivative of the initial invariant circle with respect to θ₀
-      ∂u₀_∂θ₀ = reshape(∂u₀_∂θ₀',1,n*N) # Convert to a row vector
-      ∂u₀_∂θ₁ = reshape(∂u₀_∂θ₁',1,n*N) # Convert to a row vector
+      # J, dγ = add_phase_constraints(J, dγ, u, rv₀, u₀, T₀, ρ₀, N, sys)
+      J, dγ = add_state_constraints(J, dγ, u, constraints = [1])
 
-      J = [J₁        J₂  J₃;
-           J₄        0   0;
-           ∂u₀_∂θ₀   0   0;
-           ∂u₀_∂θ₁   0   0;] # Assemble the Jacobian
-
-      append!(dγ,∂u₀_∂θ₀*reduce(vcat,u)) # Add the first phase constraint to the error vector
-      append!(dγ,∂u₀_∂θ₁*reduce(vcat,u)) # Add the second phase constraint to the error vector
-
-      for j in [1,2,3,4,6]
-         row = zeros(1,n*N+2)
-         row[j] = 1
-         J = [J;row]
-         append!(dγ,0)
-      end
-
-      dξ = J\dγ
+      dξ = -J\dγ
       du = [dξ[(i-1)*n + 1:i*n] for i = 1:N]
-      dρ = dξ[n*N+1]
-      dT = dξ[n*N+2]
+      dT = dξ[n*N+1]
+      dρ = dξ[n*N+2]
 
       u += du
-      ρ += dρ
       T += dT
+      ρ += dρ
 
       C = sum([computeC(rv₀+u[i],sys) for i in 1:N])/N # Compute the Jacobi constant for each state along the invariant circle
 
       push!(us,u)
-      # plot!(plot_iter,u,legend=true,label=string("u",iter)); # Plot the invariant circle after integrating
+      push!(Cs,C)
 
    end
 
-   return u, ρ, T, C, us
+   return u, T, ρ, C, us, uTRs, Cs
 end
 
 
@@ -314,7 +392,6 @@ function invariant_circle(rv, T, N, sys::System; α=1e-5)
    ρ = real(-im*log(λ[eig_idx])) # Initial guess for the rotation number of the invariant circle
 
    θ = 2π*(0:N-1)/N # Angles for the invariant circle
-   α = 1e-5 # parameter to control the size of the invariant circle
    u = [α*(cos(θ[i])*real(V[:,eig_idx]) - sin(θ[i])*imag(V[:,eig_idx])) for i in 1:N] # Initial guess for the invariant circle
    
    return u, ρ
@@ -331,7 +408,7 @@ function monodromy(rv₀, T, sys::System)
    w₀ = [rv₀; reshape(Φ₀,36,1)] # Reshape the matrix into a vector and append it to the state vector
    tspan = (0.,T) # integrate from 0 to T
    prob = ODEProblem(CR3BPstm!,w₀,tspan,sys) # CR3BPstm! is our in-place dynamics function for state and STM
-   sol = solve(prob,abstol=1e-12,reltol=1e-12) # solve the problem
+   sol = solve(prob,TsitPap8(),abstol=1e-12,reltol=1e-12) # solve the problem
    Φₜ = reshape(sol[end][7:end],6,6) # The final STM or monodromy matrix M = Φ(T,0)
    return Φₜ
 end
