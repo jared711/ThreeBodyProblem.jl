@@ -74,11 +74,12 @@ computeT(a, e, i) == computeT(a, e, deg2rad(i), ang_unit=:rad)
 @test stability_index(I(6)) == 1
 
 ### rotation matrices ###
-A = [-1. 0.  0.;
-      0. 1.  0.;
-      0. 0. -1.]
-@test det(roty(π) - A) == 0
-@test det(rotyd(180) - A) == 0
+@test det(roty(π) - I(3)) == 0
+@test det(rotyd(180) - I(3)) == 0
+@test det(rotz(π) - I(3)) == 0
+@test det(rotzd(180) - I(3)) == 0
+@test det(rotx(π) - I(3)) == 0
+@test det(rotxd(180) - I(3)) == 0
 
 ### test date2mjd ###
 mytime = [2000, 11, 17.625065277778]
