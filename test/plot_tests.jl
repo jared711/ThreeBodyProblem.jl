@@ -1,6 +1,7 @@
 using ThreeBodyProblem
 using RecipesBase
 using Test
+using Plots
 
 ### circle, sphere, torus ###
 # circle
