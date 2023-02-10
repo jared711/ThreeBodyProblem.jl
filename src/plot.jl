@@ -1,5 +1,3 @@
-using Plots: cgrad
-
 """
     circle(r=1, c=[0,0,0]; n=100)
 
@@ -89,7 +87,7 @@ function torus(a=5, b=10, c=[0,0,0]; n=50)
     x = @. (b + a * cos(ψ')) * cos(ϕ) + c[1] 
     y = @. (b + a * cos(ψ')) * sin(ϕ) + c[2]   
     z = @.      a * sin(ψ')  * one(ϕ) + c[3]
-    return x,y,z
+    return x, y, z
     # surface(x, y, z; lims, colorbar=false)
 end
 
@@ -172,6 +170,7 @@ end
     Recipe for plotting systems
 """
 @recipe function f(sys::System; planar=true, prim=true, sec=true, Lpts=true, scaled=false, center=[])
+    
     name1, name2 = split(sys.name, '/')
     color1 = sys.prim.color
     color2 = sys.sec.color
@@ -231,51 +230,51 @@ end
             end
         end
     else
-        zguide := "Z [NON]"
-        # error("Non-planar not implemented yet.")
-        xlims --> (-1.,1.)
-        ylims --> (-1.,1.)
-        zlims --> (-1.,1.)
-        if Lpts
-            @series begin
-                markershape --> :x # arrow --> sets the operator only when it doesn't exist
-                seriestype --> :scatter
-                markercolor --> :black
-                label --> "Lagrange Points"
-                x = [L1[1], L2[1], L3[1], L4[1], L5[1]]
-                y = [L1[2], L2[2], L3[2], L4[2], L5[2]]
-                z = zeros(5)
-                x,y,z
-            end
-        end
+        # zguide := "Z [NON]"
+        error("Non-planar sytem plotting not implemented yet.")
+        # xlims --> (-1.,1.)
+        # ylims --> (-1.,1.)
+        # zlims --> (-1.,1.)
+        # if Lpts
+        #     @series begin
+        #         markershape --> :x # arrow --> sets the operator only when it doesn't exist
+        #         seriestype --> :scatter
+        #         markercolor --> :black
+        #         label --> "Lagrange Points"
+        #         x = [L1[1], L2[1], L3[1], L4[1], L5[1]]
+        #         y = [L1[2], L2[2], L3[2], L4[2], L5[2]]
+        #         z = zeros(5)
+        #         x,y,z
+        #     end
+        # end
 
-        if prim
-            @series begin
-                label --> name1
-                seriescolor := cgrad( [color1, color1] )
-                colorbar --> false
-                seriestype --> :surface
-                if scaled
-                    x,y,z = sphere(0.1, [-sys.μ,0,0])
-                else
-                    x,y,z = sphere(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
-                end
-            end
-        end
+        # if prim
+        #     @series begin
+        #         label --> name1
+        #         seriescolor := color1
+        #         colorbar --> false
+        #         seriestype --> :surface
+        #         if scaled
+        #             x,y,z = sphere(0.1, [-sys.μ,0,0])
+        #         else
+        #             x,y,z = sphere(sys.R₁/sys.RUNIT, [-sys.μ,0,0])
+        #         end
+        #     end
+        # end
 
-        if sec
-            @series begin
-                label --> name2
-                seriescolor := cgrad( [color2, color2] )
-                colorbar --> false
-                seriestype --> :surface
-                if scaled
-                    x,y,z = sphere(0.025, [1-sys.μ,0,0])
-                else
-                    x,y,z = sphere(sys.R₂/sys.RUNIT, [1-sys.μ,0,0])
-                end
-            end
-        end
+        # if sec
+        #     @series begin
+        #         label --> name2
+        #         seriescolor := color2
+        #         colorbar --> false
+        #         seriestype --> :surface
+        #         if scaled
+        #             x,y,z = sphere(0.025, [1-sys.μ,0,0])
+        #         else
+        #             x,y,z = sphere(sys.R₂/sys.RUNIT, [1-sys.μ,0,0])
+        #         end
+        #     end
+        # end
     end
     
 end
@@ -332,7 +331,7 @@ to scale the body to the CR3BP.
     else
         @series begin
             label := body.name
-            seriescolor := cgrad( [ RGB{Float64}(0.,0.,1.) for _ in 1:2 ] )
+            seriescolor := body.color
             colorbar --> false
             seriestype --> :surface
             x,y,z = sphere(body.R*scalar, center)
@@ -369,12 +368,17 @@ end
 end
 
 """
-    Produces the appropriate limits for a plot to show the secondary body
+    seczoom(sys::System; N=5)
+
+Produces the appropriate limits for a plot to show the secondary body. N is how many radii of the secondary body the limits should reach.
 """
-function seczoom(sys::System)
+function seczoom(sys::System; N=5)
     c = [1-sys.μ, 0, 0] # center of secondary body, center of plot
-    xlims = c[1] .+ []
-    return nothing
+    r = sys.R₂/sys.RUNIT # the radius of the secondary body in normalized coordinates
+    xlims = c[1] .+ [-N*r, N*r]
+    ylims = c[2] .+ [-N*r, N*r]
+    zlims = c[3] .+ [-N*r, N*r]
+    return xlims, ylims, zlims
 end
 
 # @recipe function f(odevec::Vector{ODESolution}; label="trajectory", color=:black)
