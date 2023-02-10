@@ -134,6 +134,9 @@ mytime9 = [1993, 4, 19]
 xyz_sphere,N = deserno_hemisphere(100,[0,0,-1])
 @test abs(minimum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
 @test abs(maximum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
+xyz_sphere,N = deserno_hemisphere(100,[1,0,0])
+@test abs(minimum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
+@test abs(maximum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
 
 ### test spherical_ring ###
 c = zeros(3)
