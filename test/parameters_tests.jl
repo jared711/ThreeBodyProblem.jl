@@ -64,3 +64,9 @@ sys = sun_uranus()
 @test sys.name == "Sun/Uranus"
 sys = sun_neptune()
 @test sys.name == "Sun/Neptune"
+sys = sun_earth_moon()
+@test sys.name == "Sun/Earth/Moon"
+sys = jupiter_europa_sun()
+@test sys.name == "Jupiter/Europa/Sun"
+sys = saturn_enceladus_sun()
+@test sys.name == "Saturn/Enceladus/Sun"

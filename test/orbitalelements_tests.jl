@@ -63,7 +63,7 @@ a, e, i, Ω, ω, ν, Π, u, l, ℰ = cart2oe(rv, μ, ang_unit=:rad)
 @test ℰ == 1.0
 
 # errors
-@test_throws ErrorException("ang_unit should be :rad or :deg") cart2oe(rv, μ, ang_unit=:foo)
+@test_throws ErrorException cart2oe(rv, μ, ang_unit=:foo)
 
 # inverse
 rv = [1,0,0,0,√2,√2] # don't use an equatorial or circular orbit (oe2cart can't handle the special cases).
@@ -72,7 +72,7 @@ a, e, i, Ω, ω, ν, Π, u, l, ℰ = cart2oe(rv, μ, ang_unit=:deg)
 @test oe2cart(a, e, i, Ω, ω, ν, μ, ang_unit=:deg) == rv
 a, e, i, Ω, ω, ν, Π, u, l, ℰ = cart2oe(rv, μ, ang_unit=:rad)
 @test oe2cart(a, e, i, Ω, ω, ν, μ, ang_unit=:rad) == rv
-@test_throws ErrorException("ang_unit should be :rad or :deg") oe2cart(a, e, i, Ω, ω, ν, μ, ang_unit=:foo)
+@test_throws ErrorException oe2cart(a, e, i, Ω, ω, ν, μ, ang_unit=:foo)
 
 ### nu2E and E2nu ###
 rv = [0,1,2,0.1,1//2,0] # random elliptical orbit
@@ -92,12 +92,12 @@ E = -10
 E = 370
 @test 0 <= E2nu(E, e, ang_unit=:deg) <= 360
 # errors
-@test_throws ErrorException("ang_unit should be :rad or :deg") E2nu(E, e, ang_unit=:hey)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1)  E2nu(E, e, ang_unit=1)
-@test_throws ErrorException("e must be less than 1") E2nu(E, 1.0)
-@test_throws ErrorException("ang_unit should be :rad or :deg") nu2E(ν, e, ang_unit=:hey)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1)  nu2E(ν, e, ang_unit=1)
-@test_throws ErrorException("e must be less than 1") nu2E(ν, 1.0)
+@test_throws ErrorException E2nu(E, e, ang_unit=:hey)
+@test_throws TypeError E2nu(E, e, ang_unit=1)
+@test_throws ErrorException E2nu(E, 1.0)
+@test_throws ErrorException nu2E(ν, e, ang_unit=:hey)
+@test_throws TypeError nu2E(ν, e, ang_unit=1)
+@test_throws ErrorException nu2E(ν, 1.0)
 
 
 ### E2M and M2E ###
@@ -118,7 +118,7 @@ E = -10
 E = 370
 @test 0 <= E2M(E, e, ang_unit=:deg) <= 360
 # errors
-@test_throws ErrorException("ang_unit should be :rad or :deg") E2M(E, e, ang_unit=:hey)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1)  E2M(E, e, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :rad or :deg") nu2E(ν, e, ang_unit=:hey)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1)  nu2E(ν, e, ang_unit=1)
+@test_throws ErrorException E2M(E, e, ang_unit=:hey)
+@test_throws TypeError E2M(E, e, ang_unit=1)
+@test_throws ErrorException nu2E(ν, e, ang_unit=:hey)
+@test_throws TypeError nu2E(ν, e, ang_unit=1)

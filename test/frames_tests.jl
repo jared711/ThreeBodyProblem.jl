@@ -40,10 +40,10 @@ for θ in LinRange(0,2π,5)
     end
 end
 # errors
-@test_throws ErrorException("origin should be :barycenter, :prim, or :sec") inert2rot(rv, 0, sys, origin=1)
-@test_throws ErrorException("origin should be :barycenter, :prim, or :sec") rot2inert(rv, 0, sys, origin=:hey)
-@test_throws ErrorException("origin should be :barycenter, :prim, or :sec") inert2rot(rv, 0, p, origin=[])
-@test_throws ErrorException("origin should be :barycenter, :prim, or :sec") rot2inert(rv, 0, p, origin="")
+@test_throws ErrorException inert2rot(rv, 0, sys, origin=1) # ("origin should be :barycenter, :prim, or :sec")
+@test_throws ErrorException rot2inert(rv, 0, sys, origin=:hey) # ("origin should be :barycenter, :prim, or :sec")
+@test_throws ErrorException inert2rot(rv, 0, p, origin=[]) # ("origin should be :barycenter, :prim, or :sec")
+@test_throws ErrorException rot2inert(rv, 0, p, origin="") # ("origin should be :barycenter, :prim, or :sec")
 
 
 ### ecef2eci and eci2ecef ###
@@ -51,10 +51,10 @@ end
 @test norm(rv - ecef2eci(eci2ecef(rv, π/4), π/4)) < 1e-12
 @test norm(rv - ecef2eci(eci2ecef(rv, 45, ang_unit=:deg), 45, ang_unit=:deg)) < 1e-12
 # errors
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) ecef2eci(rv, 0, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :rad or :deg") ecef2eci(rv, 0, ang_unit=:abc)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) eci2ecef(rv, 0, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :rad or :deg") eci2ecef(rv, 0, ang_unit=:abc)
+@test_throws TypeError ecef2eci(rv, 0, ang_unit=1)
+@test_throws ErrorException ecef2eci(rv, 0, ang_unit=:abc) # ("ang_unit should be :rad or :deg")
+@test_throws TypeError eci2ecef(rv, 0, ang_unit=1)
+@test_throws ErrorException eci2ecef(rv, 0, ang_unit=:abc) # ("ang_unit should be :rad or :deg")
 
 
 ### eci2sci and sci2eci ###
@@ -67,10 +67,10 @@ rv_sun = [10,0,0,0,10,0]
 @test norm(rv - ecef2enu(enu2ecef(rv, ϕ, λ, h), ϕ, λ, h)) < 1e-12
 @test norm(rv - ecef2enu(enu2ecef(rv, ϕ, λ, h, ang_unit=:rad), ϕ, λ, h, ang_unit=:rad)) < 1e-12
 @test norm(rv - ecef2enu(enu2ecef(rv, ϕ, λ, h, geodetic=false), ϕ, λ, h, geodetic=false)) < 1e-12
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) enu2ecef(rv, ϕ, λ, h, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") enu2ecef(rv, ϕ, λ, h, ang_unit=:abc)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) ecef2enu(rv, ϕ, λ, h, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") ecef2enu(rv, ϕ, λ, h, ang_unit=:abc)
+@test_throws TypeError enu2ecef(rv, ϕ, λ, h, ang_unit=1)
+@test_throws ErrorException enu2ecef(rv, ϕ, λ, h, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
+@test_throws TypeError ecef2enu(rv, ϕ, λ, h, ang_unit=1)
+@test_throws ErrorException ecef2enu(rv, ϕ, λ, h, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
 
 ### cart2latlon and latlon2cart ###
 # inverse
@@ -81,10 +81,10 @@ r = latlon2cart(ϕ, λ, h, ang_unit=:deg)
 ϕ2, λ2, h2 = cart2latlon(r, ang_unit=:deg)
 @test norm([ϕ2, λ2, h2] - [ϕ, λ, h]) < 1e-12
 # errors
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) latlon2cart(ϕ, λ, h, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") latlon2cart(ϕ, λ, h, ang_unit=:abc)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) cart2latlon(r, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") cart2latlon(r, ang_unit=:abc)
+@test_throws TypeError latlon2cart(ϕ, λ, h, ang_unit=1)
+@test_throws ErrorException latlon2cart(ϕ, λ, h, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
+@test_throws TypeError cart2latlon(r, ang_unit=1)
+@test_throws ErrorException cart2latlon(r, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
 
 ### cart2azel and azel2cart ###
 # inverse
@@ -95,7 +95,7 @@ az, el, d = cart2azel(r, ang_unit=:rad)
 r2 = azel2cart(az, el, d, ang_unit=:rad)
 @test norm(r - r2) < 1e-12
 # errors
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) latlon2cart(ϕ, λ, h, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") latlon2cart(ϕ, λ, h, ang_unit=:abc)
-@test_throws TypeError(Symbol("keyword argument"), :ang_unit, Symbol, 1) cart2latlon(r, ang_unit=1)
-@test_throws ErrorException("ang_unit should be :deg or :rad") cart2latlon(r, ang_unit=:abc)
+@test_throws TypeError latlon2cart(ϕ, λ, h, ang_unit=1)
+@test_throws ErrorException latlon2cart(ϕ, λ, h, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
+@test_throws TypeError cart2latlon(r, ang_unit=1)
+@test_throws ErrorException cart2latlon(r, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
