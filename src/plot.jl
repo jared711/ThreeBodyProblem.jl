@@ -148,13 +148,8 @@ Outputs the ẋ and ẏ components of the velocity of the trajectory 'rv', which
 """
 function velocity_2D(rv)
     N = length(rv)
-    if length(rv[1]) == 4
-        ẋ = [rv[i][3] for i = 1:N]
-        ẏ = [rv[i][4] for i = 1:N]
-    elseif length(rv[1]) == 6
-        ẋ = [rv[i][4] for i = 1:N] # If the trajectory is 3D, we still only want the x and y components of the velocity
-        ẏ = [rv[i][5] for i = 1:N]
-    end
+    ẋ = [rv[i][3] for i = 1:N]
+    ẏ = [rv[i][4] for i = 1:N]
     return ẋ,ẏ
 end
 
@@ -203,12 +198,14 @@ end
                 seriestype --> :shape
                 fillalpha --> 0.5
                 if isempty(center)
-                    center = [-sys.μ,0,0]
+                    c = [-sys.μ,0,0]
+                else
+                    c = center
                 end
                 if scaled
-                    x,y = circle(0.1, center)
+                    x,y = circle(0.1, c)
                 else
-                    x,y = circle(sys.R₁/sys.RUNIT, center)
+                    x,y = circle(sys.R₁/sys.RUNIT, c)
                 end
             end
         end
@@ -220,12 +217,14 @@ end
                 seriestype --> :shape
                 fillalpha --> 0.5
                 if isempty(center)
-                    center = [1-sys.μ,0,0]
+                    c = [1-sys.μ,0,0]
+                else
+                    c = center
                 end
                 if scaled
-                    x,y = circle(0.025, center)
+                    x,y = circle(0.025, c)
                 else
-                    x,y = circle(sys.R₂/sys.RUNIT, center)
+                    x,y = circle(sys.R₂/sys.RUNIT, c)
                 end
             end
         end

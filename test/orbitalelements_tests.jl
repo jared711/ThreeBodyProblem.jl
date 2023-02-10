@@ -120,5 +120,5 @@ E = 370
 # errors
 @test_throws ErrorException E2M(E, e, ang_unit=:hey)
 @test_throws TypeError E2M(E, e, ang_unit=1)
-@test_throws ErrorException nu2E(ν, e, ang_unit=:hey)
-@test_throws TypeError nu2E(ν, e, ang_unit=1)
+@test_throws ErrorException M2E(M, e, ang_unit=:hey)
+@test_throws TypeError M2E(M, e, ang_unit=1)

@@ -19,9 +19,19 @@ x,y,z = torus(a,b,c)
 ### plot recipes ###
 # system
 sys = earth_moon()
+p = plot(sys);
+@test !isempty(p)
+p = plot(sys,scaled=true);
+@test !isempty(p)
+@test_throws ErrorException plot(sys,:planar=>false); # ("Cannot convert System to series data for plotting")
+# RecipesBase method
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(), sys))
-@test_throws ErrorException rec = RecipesBase.apply_recipe(Dict{Symbol, Any}(:planar=>false), sys)
+@test_throws ErrorException RecipesBase.apply_recipe(Dict{Symbol, Any}(:planar=>false), sys)
 # body
+p = plot(sys.prim);
+@test !isempty(p)
+p = plot(sys.sec, planar=false);
+@test !isempty(p)
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(), sys.prim))
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(:planar=>false), sys.prim))
 # trajectory
@@ -29,6 +39,14 @@ Lpts = computeLpts(sys)
 t = LinRange(0,2π,10)
 traj = [rot2inert([Lpts[1];zeros(3)],t[i],sys) for i ∈ eachindex(t)]
 traj4D= [traj[i][[1,2,4,5]] for i ∈ eachindex(t)]
+p = plot(traj);
+@test !isempty(p)
+p = plot(traj4D);
+@test !isempty(p)
+p = plot(traj, vel=true);
+@test !isempty(p)
+p = plot(traj4D);
+@test !isempty(p)
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(), traj))
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(), traj4D))
 @test !isempty(RecipesBase.apply_recipe(Dict{Symbol, Any}(:vel=>true), traj))

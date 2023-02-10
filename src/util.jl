@@ -310,7 +310,7 @@ function computeΩ(r,p::Array)
     r₁,r₂ = computer1r2(r,p)
     μ₁,μ₂,d = p
     n = sqrt((μ₁ + μ₂)/d^3)
-    Ω = (x^2 + y^2)*n^2/2 + μ₁/r₁ + μ₂/r₂;
+    Ω = ((x^2 + y^2)*n^2)/2 + μ₁/r₁ + μ₂/r₂;
     return Ω
 end
 
@@ -339,7 +339,7 @@ bodies and the distance between them.
 computeUeff(r,p::Array) = computeΩ(r,p)
 
 """
-    computeC(r,μ)
+    computeC(rv,μ)
 
 Compute Jacobi constant given normalized state rv {NON} and mass parameter μ {NON}
 """

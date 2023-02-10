@@ -356,8 +356,6 @@ Converts state from ENU frame to inertial frame
 function ecef2enu(rv_ecef, ϕ, λ, h=0; geodetic=true, ang_unit::Symbol=:deg, e_earth=0.0818, r_earth=6.378136e3)
     d = h + r_earth # [km] radius of the earth plus altitude
 
-    R = rotlatlon(ϕ, λ, ang_unit=ang_unit)
-
     if geodetic # geodetic latitude
         if ang_unit == :rad
             N = r_earth/sqrt(1-(e_earth^2)*sin(λ)^2)
@@ -372,6 +370,9 @@ function ecef2enu(rv_ecef, ϕ, λ, h=0; geodetic=true, ang_unit::Symbol=:deg, e_
     else # geocentric latitude and longitude
         r_radar_ecef = latlon2cart(ϕ, λ, d, ang_unit=ang_unit)
     end
+    
+    R = rotlatlon(ϕ, λ, ang_unit=ang_unit)
+    
     r_enu = R'*(rv_ecef[1:3] - r_radar_ecef)
     v_enu = R'*rv_ecef[4:6]
     rv_enu = [r_enu; v_enu]

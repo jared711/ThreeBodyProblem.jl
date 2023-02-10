@@ -74,8 +74,8 @@ rv_sun = [10,0,0,0,10,0]
 
 ### cart2latlon and latlon2cart ###
 # inverse
-r = latlon2cart(ϕ, λ, h)
-ϕ2, λ2, h2 = cart2latlon(r)
+r = latlon2cart(ϕ, λ, h, ang_unit=:rad)
+ϕ2, λ2, h2 = cart2latlon(r, ang_unit=:rad)
 @test norm([ϕ2, λ2, h2] - [ϕ, λ, h]) < 1e-12
 r = latlon2cart(ϕ, λ, h, ang_unit=:deg)
 ϕ2, λ2, h2 = cart2latlon(r, ang_unit=:deg)
@@ -95,7 +95,7 @@ az, el, d = cart2azel(r, ang_unit=:rad)
 r2 = azel2cart(az, el, d, ang_unit=:rad)
 @test norm(r - r2) < 1e-12
 # errors
-@test_throws TypeError latlon2cart(ϕ, λ, h, ang_unit=1)
-@test_throws ErrorException latlon2cart(ϕ, λ, h, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
-@test_throws TypeError cart2latlon(r, ang_unit=1)
-@test_throws ErrorException cart2latlon(r, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
+@test_throws TypeError azel2cart(az, el, d, ang_unit=1)
+@test_throws ErrorException azel2cart(az, el, d, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
+@test_throws TypeError cart2azel(r, ang_unit=1)
+@test_throws ErrorException cart2azel(r, ang_unit=:abc) # ("ang_unit should be :deg or :rad")
