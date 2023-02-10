@@ -682,20 +682,20 @@ function wraptopi(θ)
     return θ
 end
 
-"""
-    date2str(date)
+# """ # I don't think this is necessary
+#     date2str(date)
 
-# returns a string with the date in the format "YYYY-MM-DD hh:mm:ss"
-"""
-function date2str(date)
-    Y = Int(date[1])
-    M = Int(date[2])
-    D = Int(date[3])
-    h = Int(date[4])
-    m = Int(date[5])
-    s = date[6]
-    return string(Y, "-", M, "-", D, " ", h, ":", m, ":", s)
-end
+# # returns a string with the date in the format "YYYY-MM-DD hh:mm:ss"
+# """
+# function date2str(date)
+#     Y = Int(date[1])
+#     M = Int(date[2])
+#     D = Int(date[3])
+#     h = Int(date[4])
+#     m = Int(date[5])
+#     s = date[6]
+#     return string(Y, "-", M, "-", D, " ", h, ":", m, ":", s)
+# end
 
 """
     deserno_sphere(N_desired)

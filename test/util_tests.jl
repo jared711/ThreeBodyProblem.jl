@@ -102,6 +102,7 @@ mytime9 = [1993, 4, 19]
 
 @test_throws ErrorException date2mjd(1) # ("ut1_date should be [Y,M,D] or [Y,M,D,h,m,s]")
 
+### test wrapto180, wrapto360, wrapto2pi, wraptopi ###
 @test wrapto360(314) == 314
 @test wrapto360(372) == 12
 @test wrapto360(721) == 1
@@ -120,14 +121,17 @@ mytime9 = [1993, 4, 19]
 @test wraptopi(2π) == 0.
 @test wraptopi(-2π) == 0.
 
+### test rotlatlon ###
 @test rotlatlon(π/2,-π/2,ang_unit=:rad) == I
 @test_throws ErrorException rotlatlon(0,0,ang_unit=:foo)
 
+### test mjd2gmst ###
 @test mjd2gmst(51544.5,ang_unit=:deg) == 280.4606
+@test mjd2gmst(51544.5,ang_unit=:rad) == 4.894960892118808
 @test_throws ErrorException mjd2gmst(0,ang_unit=:foo)
 
 ### test deserno_hemisphere ###
-xyz_sphere,N = deserno_hemisphere(100,[1,0,0])
+xyz_sphere,N = deserno_hemisphere(100,[0,0,-1])
 @test abs(minimum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
 @test abs(maximum([norm(xyz_sphere[:,i]) for i = 1:N]) - 1) < 1e-10
 
