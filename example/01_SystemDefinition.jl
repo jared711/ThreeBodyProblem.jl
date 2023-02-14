@@ -1,8 +1,9 @@
 @time using ThreeBodyProblem
+@time using Plots
 
-## Defining New Bodies
+### Defining New Bodies ###
 
-### We use the Body() constructor to create a new planet and a new moon
+## We use the Body() constructor to create a new planet and a new moon
 
 # Create the ice planet Hoth
 m = 1e24 # {kg} mass
@@ -44,7 +45,8 @@ println("The Primary Body is ", sys.prim.name)
 
 sys.μ
 
-### While it looks pretty to use greek letters μ and other unicode operators like superscripts r¹ and subscripts r₁, they may cause trouble with plotting and in other situations. So there are always non-unicode alternatives, like sys.mu instead of sys.μ
+### While it looks pretty to use greek letters μ and other unicode operators like superscripts r¹ and subscripts r₁, 
+# they may cause trouble with plotting and in other situations. So there are always non-unicode alternatives, like sys.mu instead of sys.μ
 
 sys.mu
 
@@ -52,7 +54,6 @@ sys.mu
 
 ### We can plot a System object using the plot() command
 
-using Plots
 plot(sys)
 
 # Notice that the plot is made in the rotating frame, with non-dimensionalized coordinates
