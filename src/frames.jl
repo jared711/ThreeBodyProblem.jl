@@ -295,7 +295,7 @@ function eci2ecef(rv_eci, θ; ω=7.292115373194e-5, ang_unit::Symbol=:rad)
 end
 
 """
-    eci2sci(rv_eci, rv_sun_eci; ε=23.43929)
+    eci2sci(rv_eci, rv_sun_eci; ε=23.439292)
 
 # converts state from Earth-Centered Inertial (ECI) frame to Sun-Centered Inertial (SCI) frame
 """

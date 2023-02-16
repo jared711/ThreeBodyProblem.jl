@@ -138,9 +138,15 @@ struct BicircularSystem
     name::String    # name of system (e.g. "Earth/Moon/Sun")
 end
 BicircularSystem(prim::Body, sec::Body, ter::Body) = BicircularSystem(prim, sec, ter,
-    prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/prim.T, prim.R, sec.R, ter.R, ter.T,
+    prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/prim.T, prim.R, sec.R, ter.R, ter.T, # n3 should be sec.T/ter.T, but the ter is normally the sun which doesn't have a period. What we want is the period of the primary about the sun, so we take prim.T
     prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/prim.T, prim.R, sec.R, ter.R, ter.T,
     sec.T, sec.a, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name,"/",ter.name))
+
+BicircularSystem2(prim::Body, sec::Body, ter::Body) = BicircularSystem(prim, sec, ter,
+    prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/ter.T, prim.R, sec.R, ter.R, ter.T, # the only difference is n3 = sec.T/ter.T, as it should be
+    prim.m*G, sec.m*G, ter.m*G, sec.m/(prim.m+sec.m), ter.m/(prim.m+sec.m), sec.T/ter.T, prim.R, sec.R, ter.R, ter.T, 
+    sec.T, sec.a, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name,"/",ter.name))
+
 
 
 ### Setting Parameters for Various Bodies and Systems
@@ -248,21 +254,29 @@ saturn_enceladus() = System(SATURN, ENCELADUS)
 
 """
     earth_moon_sun()
+
+Normal BCP with the larger body (SUN) as the tertiary
 """
 earth_moon_sun() = BicircularSystem(EARTH, MOON, SUN)
 
 """
     sun_earth_moon()
+
+BCP2 with the smaller body (MOON) as the tertiary
 """
-sun_earth_moon() = BicircularSystem(SUN, EARTH, MOON)
+sun_earth_moon() = BicircularSystem2(SUN, EARTH, MOON)
 
 """
     jupiter_europa_sun()
+
+Normal BCP with the larger body (SUN) as the tertiary
 """
 jupiter_europa_sun() = BicircularSystem(JUPITER, EUROPA, SUN)
 
 """
     saturn_enceladus_sun()
+
+Normal BCP with the larger body (SUN) as the tertiary
 """
 saturn_enceladus_sun() = BicircularSystem(SATURN, ENCELADUS, SUN)
 
