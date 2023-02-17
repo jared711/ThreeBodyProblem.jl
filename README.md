@@ -3,7 +3,7 @@
 <!--- [![Build Status](https://travis-ci.com/jared711/ThreeBodyProblem.jl.svg?branch=master)](https://travis-ci.com/jared711/ThreeBodyProblem.jl) -->
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/jared711/ThreeBodyProblem.jl?svg=true)](https://ci.appveyor.com/project/jared711/ThreeBodyProblem-jl)
 [![Codecov](https://codecov.io/gh/jared711/ThreeBodyProblem.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jared711/ThreeBodyProblem.jl)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblem.jl/master)
+<!---[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblem.jl/master) -->
 [![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl/)
 
 An astrodynamics package for working in the three-body problem.
@@ -19,7 +19,7 @@ using ThreeBodyProblem
 ```
 
 ## Examples
-We've put together some working examples that demonstrate many of the functionalities of ThreeBodyProblem.jl. They can be found in the [example](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/example) folder. Each example has a .jl and .ipynb file. The .jl files can be run line by line in your favorite IDE. The .ipynb files are Jupyter notebooks and need a little more setup to run.
+We've put together some working examples that demonstrate many of the functionalities of ThreeBodyProblem.jl. They can be found in the [examples](https://github.com/jared711/ThreeBodyProblem.jl/tree/master/examples) folder, which is a separate submodule. Each example has a .jl and .ipynb file. The .jl files can be run line by line in your favorite IDE. The .ipynb files are Jupyter notebooks and need a little more setup to run.
 
 ### Jupyter Notebooks
 
