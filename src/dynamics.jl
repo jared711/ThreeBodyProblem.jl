@@ -207,7 +207,7 @@ the normalized CR3BP where `μ` is the CR3BP mass parameter μ₂/(μ₁+μ₂) 
 function CR3BPinert(rv,μ,t)
     x,y,z,vx,vy,vz = rv
     r₁ = [x +       μ*cos(t); y +       μ*sin(t); 0]
-    r₂ = [x - (1 - μ)*cos(t); y - (1 - μ)*cos(t); 0]
+    r₂ = [x - (1 - μ)*cos(t); y - (1 - μ)*sin(t); 0]
     r₁³ = norm(r₁)^3
     r₂³ = norm(r₂)^3
     rvdot = zeros(6)
