@@ -22,7 +22,7 @@ include("parameters.jl")
 export    System,
           Body,
           BicircularSystem,
-          set_system,
+          BicircularSystem2,
           sun_mercury,
           sun_venus,
           sun_earth,
