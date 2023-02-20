@@ -51,14 +51,14 @@ the normalized CR3BP where `μ` is the CR3BP mass parameter μ₂/(μ₁+μ₂) 
 {NON}.
 """
 function CR3BPdynamics(rv,μ,t) #Three body dynamics in Earth/Moon System
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
     r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
 
     rvdot = zeros(6)
-    rvdot[1:3] = [vx;vy;vz]
-    rvdot[4] = -((1 - μ)*(x + μ)/r₁³) - (μ*(x - 1 + μ)/r₂³) + x + 2*vy
-    rvdot[5] = -((1 - μ)*y      /r₁³) - (μ*y          /r₂³) + y - 2*vx
+    rvdot[1:3] = [ẋ;ẏ;ż]
+    rvdot[4] = -((1 - μ)*(x + μ)/r₁³) - (μ*(x - 1 + μ)/r₂³) + x + 2*ẏ
+    rvdot[5] = -((1 - μ)*y      /r₁³) - (μ*y          /r₂³) + y - 2*ẋ
     rvdot[6] = -((1 - μ)*z      /r₁³) - (μ*z          /r₂³)
     return rvdot
 end
@@ -82,7 +82,7 @@ gravitational parameters of the first and second primary bodies as well as the d
 between them. `t` is time {s}.
 """
 function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
     μ₁,μ₂,d = p # parameters
     d₁, d₂ = computed1d2(p) # distances from primaries to barycenter
     ωₛ = sqrt((μ₁ + μ₂)/d^3) #rotation rate of system
@@ -90,9 +90,9 @@ function CR3BPdynamics(rv,p::Array,t) #Three body dynamics in Earth/Moon System
     r₂³= ((x-d₂)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
 
     rvdot = zeros(6)
-    rvdot[1:3] = [vx;vy;vz]
-    rvdot[4]   = -(μ₁*(x+d₁)/r₁³) - (μ₂*(x-d₂)/r₂³) + 2*ωₛ*vy + ωₛ^2*x
-    rvdot[5]   = -(μ₁*y     /r₁³) - (μ₂*y     /r₂³) - 2*ωₛ*vx + ωₛ^2*y
+    rvdot[1:3] = [ẋ;ẏ;ż]
+    rvdot[4]   = -(μ₁*(x+d₁)/r₁³) - (μ₂*(x-d₂)/r₂³) + 2*ωₛ*ẏ + ωₛ^2*x
+    rvdot[5]   = -(μ₁*y     /r₁³) - (μ₂*y     /r₂³) - 2*ωₛ*ẋ + ωₛ^2*y
     rvdot[6]   = -(μ₁*z     /r₁³) - (μ₂*z     /r₂³)
     return rvdot
 end
@@ -137,27 +137,27 @@ is the CR3BP mass parameter μ₂/(μ₁+μ₂) {NON} and `t` is time {NON}.
 function CR3BPstm(w,μ,t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
     Φ = reshape(w[7:42],6,6)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
 
     r₁³= ((x + μ)^2     + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
     r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
     r₁⁵= ((x + μ)^2     + y^2 + z^2)^2.5 # distance to m1, LARGER MASS
     r₂⁵= ((x - 1 + μ)^2 + y^2 + z^2)^2.5 # distance to m2, smaller mass
 
-    omgxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵)
-    omgxy = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵
-    omgxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵
-    omgyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵)
-    omgyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵
-    omgzz = - (1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵)
+    Ωxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵)
+    Ωxy = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵
+    Ωxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵
+    Ωyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵)
+    Ωyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵
+    Ωzz = - (1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵)
 
 
     F = [   0     0     0     1     0	 0 ;
             0     0     0     0 	1 	 0 ;
             0	  0     0     0     0    1 ;
-        omgxx omgxy omgxz     0     2 	 0 ;
-        omgxy omgyy omgyz    -2     0 	 0 ;
-        omgxz omgyz omgzz     0	    0	 0 ]
+          Ωxx   Ωxy   Ωxz     0     2 	 0 ;
+          Ωxy   Ωyy   Ωyz    -2     0 	 0 ;
+          Ωxz   Ωyz   Ωzz     0	    0	 0 ]
 
     Φdot = F*Φ
     wdot = zeros(42)
@@ -205,13 +205,13 @@ the normalized CR3BP where `μ` is the CR3BP mass parameter μ₂/(μ₁+μ₂) 
 {NON}.
 """
 function CR3BPinert(rv,μ,t)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
     r₁ = [x +       μ*cos(t); y +       μ*sin(t); 0]
     r₂ = [x - (1 - μ)*cos(t); y - (1 - μ)*sin(t); 0]
     r₁³ = norm(r₁)^3
     r₂³ = norm(r₂)^3
     rvdot = zeros(6)
-    rvdot[1:3] = [vx;vy;vz]
+    rvdot[1:3] = [ẋ;ẏ;ż]
     rvdot[4:6] = -(1 - μ)*r₁/r₁³ - μ*r₂/r₂³
     return rvdot
 end
@@ -235,7 +235,7 @@ gravitational parameters of the first and second primary bodies as well as the d
 between them. `t` is time {s}.
 """
 function CR3BPinert(rv,p::Array,t)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
     μ₁,μ₂,d = p # parameters
     d₁,d₂ = computed1d2(p)
     ωₛ = sqrt((μ₁ + μ₂)/d^3)
@@ -286,11 +286,11 @@ Clohessy-Wiltshire equations. Compute time derivative of state vector `rv = [δr
 {km; km/s} where `n` {rad/s} is the mean motion of the chief and `t` is time {s}.
 """
 function CWdynamics(rv,n,t)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
     rvdot = zeros(6)
     rvdot[1:3] = rv[4:6]
-    rvdot[4] = 2*n*vy + 3*n^2*x
-    rvdot[5] = -2*n*vx
+    rvdot[4] = 2*n*ẏ + 3*n^2*x
+    rvdot[5] = -2*n*ẋ
     rvdot[6] = -n^2*z
     return rvdot
 end
@@ -319,7 +319,7 @@ Bicircular Four-Body Problem (BCP). `μ` {NON} is the BCP mass parameter and `m�
 `n₃` {NON} are the normalized mass and mean motion of the tertiary body. `t` is time {NON}.
 """
 function BCPdynamics(rv, μ, m₃, n₃, t)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
 
     # Xₑ = μ*cos(t);      Yₑ = μ*sin(t);      Zₑ = 0
     # Xₘ = (μ-1)*cos(t);  Yₘ = (μ-1)*sin(t);  Zₘ = 0
@@ -335,9 +335,9 @@ function BCPdynamics(rv, μ, m₃, n₃, t)
     r₃³ = ( (x-x₃)^2 + (y-y₃)^2 + z^2)^1.5 # distance to m3, the tertiary body
 
     rvdot = zeros(6)
-    rvdot[1:3] = [vx;vy;vz]
-    rvdot[4] = -((1-μ)*(x+μ)/r₁³ + μ*(x-1+μ)/r₂³ + m₃*(x-x₃)/r₃³ + m₃*cos(θ)/a₃^2) + x + 2*vy
-    rvdot[5] = -((1-μ)  *  y/r₁³ + μ   *   y/r₂³ + m₃*(y-y₃)/r₃³ + m₃*sin(θ)/a₃^2) + y - 2*vx
+    rvdot[1:3] = [ẋ;ẏ;ż]
+    rvdot[4] = -((1-μ)*(x+μ)/r₁³ + μ*(x-1+μ)/r₂³ + m₃*(x-x₃)/r₃³ + m₃*cos(θ)/a₃^2) + x + 2*ẏ
+    rvdot[5] = -((1-μ)  *  y/r₁³ + μ   *   y/r₂³ + m₃*(y-y₃)/r₃³ + m₃*sin(θ)/a₃^2) + y - 2*ẋ
     rvdot[6] = -((1-μ)  *  z/r₁³ + μ   *   z/r₂³ + m₃  *   z/r₃³)
 return rvdot
 end
@@ -385,7 +385,7 @@ in BCPdynamics2, the tertiary is assumed to orbit the secondary rather than the 
 For example, if working in the Sun/Earth barycenter with the Moon orbiting the Earth.
 """
 function BCPdynamics2(rv, μ, m₃, n₃, t)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
 
     # Xₑ = μ*cos(t);      Yₑ = μ*sin(t);      Zₑ = 0
     # Xₘ = (μ-1)*cos(t);  Yₘ = (μ-1)*sin(t);  Zₘ = 0
@@ -401,9 +401,9 @@ function BCPdynamics2(rv, μ, m₃, n₃, t)
     r₃³ = ( (x-x₃)^2 + (y-y₃)^2 + z^2)^1.5 # distance to m3, the tertiary body
 
     rvdot = zeros(6)
-    rvdot[1:3] = [vx;vy;vz]
-    rvdot[4] = -((1-μ)*(x+μ)/r₁³ + μ*(x-1+μ)/r₂³ + m₃*(x-x₃)/r₃³) + x + 2*vy
-    rvdot[5] = -((1-μ)  *  y/r₁³ + μ   *   y/r₂³ + m₃*(y-y₃)/r₃³) + y - 2*vx
+    rvdot[1:3] = [ẋ;ẏ;ż]
+    rvdot[4] = -((1-μ)*(x+μ)/r₁³ + μ*(x-1+μ)/r₂³ + m₃*(x-x₃)/r₃³) + x + 2*ẏ
+    rvdot[5] = -((1-μ)  *  y/r₁³ + μ   *   y/r₂³ + m₃*(y-y₃)/r₃³) + y - 2*ẋ
     rvdot[6] = -((1-μ)  *  z/r₁³ + μ   *   z/r₂³ + m₃  *   z/r₃³)
     return rvdot
 end
@@ -450,7 +450,7 @@ mass and mean motion of the tertiary body. `t` is time {NON}.
 function BCPstm(w, μ, m₃, n₃, t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
     Φ = reshape(w[7:42],6,6)
-    x,y,z,vx,vy,vz = rv
+    x,y,z,ẋ,ẏ,ż = rv
 
     a₃ = (1+m₃)^(1/3)/n₃^(2/3)
     θ = (n₃-1)*t # This is changed from 1-n₃ so now θ will be negative for the Sun and positive for the Moon (BCP2)
