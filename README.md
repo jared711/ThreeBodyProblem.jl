@@ -43,7 +43,7 @@ notebook(dir=".",detached=true)
 
 VS Code has a [Jupyter notebook extension](https://code.visualstudio.com/docs/datascience/jupyter-notebooks), as do some other popular IDEs.
 
-You can also run the Jupyter notebooks on your browser through binder. Just click the binder icon [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblem.jl/master) and wait for a JupyterLab window to appear. It may take a few minutes to load.  Pick the Jupyter notebook (filetype .ipynb) you want to run from the file tab on the left. Pressing CTRL+ENTER will run a block of code, while SHIFT+ENTER will run a block and move to the next one.
+You can also run the Jupyter notebooks on your browser through binder. Just click the binder icon [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblem.jl/master) and wait for a JupyterLab window to appear. It may take a few minutes to load. Make sure to **turn off any adblocker** for mybinder.org or it won't load. Pick the Jupyter notebook (filetype .ipynb) you want to run from the file tab on the left. Pressing CTRL+ENTER will run a block of code, while SHIFT+ENTER will run a block and move to the next one.
 <!---Eventually this window should appear. ![image](https://user-images.githubusercontent.com/25643720/216104189-4d60e01b-dc72-4946-b72f-0d774bd78187.png)
 Navigate to the example folder on the left side of the screen,-->
 
