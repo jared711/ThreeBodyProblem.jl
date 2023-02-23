@@ -128,6 +128,43 @@ function CR3BPdynamics!(rvdot,rv,p::Array,t) #Three body dynamics in Earth/Moon 
 end
 
 """
+    CR3BPjac(rv, μ)
+
+Compute Jacobian of time derivative w.r.t. state vector [6x6]
+"""
+function CR3BPjac(rv, μ)
+    x,y,z = rv[1:3]
+
+    r₁³= ((x+μ)^2   + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
+    r₂³= ((x-1+μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
+    r₁⁵= ((x+μ)^2   + y^2 + z^2)^2.5 # distance to m1, LARGER MASS
+    r₂⁵= ((x-1+μ)^2 + y^2 + z^2)^2.5 # distance to m2, smaller mass
+
+    Ωxx = 1 - (1-μ)*(1/r₁³ - 3*(x+μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x-1+μ)^2/r₂⁵)
+    Ωyy = 1 - (1-μ)*(1/r₁³ - 3*    y^2/r₁⁵) - μ*(1/r₂³ - 3*      y^2/r₂⁵)
+    Ωzz =   - (1-μ)*(1/r₁³ - 3*    z^2/r₁⁵) - μ*(1/r₂³ - 3*      z^2/r₂⁵)
+    
+    Ωxy = 3*(1-μ)*(x+μ)*y/r₁⁵ + 3*μ*(x-1+μ)*y/r₂⁵
+    Ωxz = 3*(1-μ)*(x+μ)*z/r₁⁵ + 3*μ*(x-1+μ)*z/r₂⁵
+    Ωyz = 3*(1-μ)*    y*z/r₁⁵ + 3*μ*      y*z/r₂⁵
+
+
+    F = [   0     0     0     1     0	 0 ;
+            0     0     0     0 	1 	 0 ;
+            0	  0     0     0     0    1 ;
+          Ωxx   Ωxy   Ωxz     0     2 	 0 ;
+          Ωxy   Ωyy   Ωyz    -2     0 	 0 ;
+          Ωxz   Ωyz   Ωzz     0	    0	 0 ]
+end
+
+"""
+    CR3BPjac(rv, sys)
+
+Compute Jacobian of time derivative w.r.t. state vector [6x6]
+"""
+CR3BPjac(rv, sys::System) = CR3BPjac(rv, sys.μ)
+
+"""
     CR3BPstm(w, μ, t)
 
 Compute time derivative of state vector `w = [r; v; vec(Φ)]` {NON; NON; NON} in the rotating
@@ -137,27 +174,29 @@ is the CR3BP mass parameter μ₂/(μ₁+μ₂) {NON} and `t` is time {NON}.
 function CR3BPstm(w,μ,t) #Three body dynamics in Earth/Moon System
     rv = w[1:6]
     Φ = reshape(w[7:42],6,6)
-    x,y,z,ẋ,ẏ,ż = rv
+    # x,y,z,ẋ,ẏ,ż = rv
 
-    r₁³= ((x + μ)^2     + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
-    r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
-    r₁⁵= ((x + μ)^2     + y^2 + z^2)^2.5 # distance to m1, LARGER MASS
-    r₂⁵= ((x - 1 + μ)^2 + y^2 + z^2)^2.5 # distance to m2, smaller mass
+    # r₁³= ((x + μ)^2     + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
+    # r₂³= ((x - 1 + μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
+    # r₁⁵= ((x + μ)^2     + y^2 + z^2)^2.5 # distance to m1, LARGER MASS
+    # r₂⁵= ((x - 1 + μ)^2 + y^2 + z^2)^2.5 # distance to m2, smaller mass
 
-    Ωxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵)
-    Ωxy = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵
-    Ωxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵
-    Ωyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵)
-    Ωyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵
-    Ωzz = - (1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵)
+    # Ωxx = 1 - (1-μ)*(1/r₁³ - 3*(x + μ)^2/r₁⁵) - μ*(1/r₂³ - 3*(x - 1 + μ)^2/r₂⁵)
+    # Ωxy = 3*(1-μ)*(x + μ)*y/r₁⁵ + 3*μ*(x - 1 + μ)*y/r₂⁵
+    # Ωxz = 3*(1-μ)*(x + μ)*z/r₁⁵ + 3*μ*(x - 1 + μ)*z/r₂⁵
+    # Ωyy = 1 - (1-μ)*(1/r₁³ - 3*y^2/r₁⁵) - μ*(1/r₂³ - 3*y^2/r₂⁵)
+    # Ωyz = 3*(1-μ)*y*z/r₁⁵ + 3*μ*y*z/r₂⁵
+    # Ωzz = - (1-μ)*(1/r₁³ - 3*z^2/r₁⁵) - μ*(1/r₂³ - 3*z^2/r₂⁵)
 
 
-    F = [   0     0     0     1     0	 0 ;
-            0     0     0     0 	1 	 0 ;
-            0	  0     0     0     0    1 ;
-          Ωxx   Ωxy   Ωxz     0     2 	 0 ;
-          Ωxy   Ωyy   Ωyz    -2     0 	 0 ;
-          Ωxz   Ωyz   Ωzz     0	    0	 0 ]
+    # F = [   0     0     0     1     0	 0 ;
+    #         0     0     0     0 	1 	 0 ;
+    #         0	  0     0     0     0    1 ;
+    #       Ωxx   Ωxy   Ωxz     0     2 	 0 ;
+    #       Ωxy   Ωyy   Ωyz    -2     0 	 0 ;
+    #       Ωxz   Ωyz   Ωzz     0	    0	 0 ]
+
+    F = CR3BPjac(rv, μ)
 
     Φdot = F*Φ
     wdot = zeros(42)
