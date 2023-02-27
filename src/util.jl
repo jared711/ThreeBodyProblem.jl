@@ -1,4 +1,29 @@
 """
+    getrv(rv)
+
+Return the position and velocity vectors from `rv` which can be of length 2, 3, 4, or 6. This function makes it possible to deal with planar and spatial cases in a uniform way.
+"""
+function getrv(rv)
+    if length(rv) == 2
+        r = [rv[1], rv[2], 0] # planar
+        v = zeros(3) # no velocity
+    elseif length(rv) == 3
+        r = rv[1:3] # spatial
+        v = zeros(3) # no velocity
+    elseif length(rv) == 4
+        r = [rv[1], rv[2], 0] # planar
+        v = [rv[3], rv[4], 0] # planar velocity
+    elseif length(rv) == 6
+        r = rv[1:3] # spatial
+        v = rv[4:6] # spatial velocity
+    else
+        error("rv must be of length 2, 3, 4, or 6")
+    end
+    return r, v
+end
+
+
+"""
      computed1d2(μ)
 
 Compute the non-dimensional, directional distances of each body from the barycenter given the mass
@@ -39,9 +64,11 @@ Compute the non-dimensional position vectors of the particle from each body give
 vector `r` {NON} and the mass parameter `μ` {NON}.
 """
 function computer1r2(r,μ)
-    x,y,z = r[1:3]
-    r₁ = sqrt((x + μ)^2      + y^2 + z^2)
-    r₂ = sqrt((x - 1 + μ)^2  + y^2 + z^2)
+    r, = getrv(r) # make sure r is a 3-vector
+    x,y,z = r[1:3] # unpack components (z=0 if planar)
+    d₁,d₂ = computed1d2(μ) # compute distances of primaries to barycenter
+    r₁ = sqrt((x+d₁)^2 + y^2 + z^2) # compute distance to primary
+    r₂ = sqrt((x-d₂)^2 + y^2 + z^2) # compute distance to secondary
     return r₁, r₂
 end
 
@@ -61,10 +88,11 @@ and `p = [μ₁,μ₂,d]` {km³/s², km³/s², km} which are the gravitational p
 second primary bodies and the distance between them.
 """
 function computer1r2(r,p::Array)
-    x,y,z = r[1:3]
-    d₁,d₂ = computed1d2(p)
-    r₁ = sqrt((x + d₁)^2 + y^2 + z^2)
-    r₂ = sqrt((x - d₂)^2 + y^2 + z^2)
+    r, = getrv(r) # make sure r is a 3-vector
+    x,y,z = r[1:3] # unpack components (z=0 if planar)
+    d₁,d₂ = computed1d2(p) # compute distances of primaries to barycenter
+    r₁ = sqrt((x+d₁)^2 + y^2 + z^2) # compute distance to primary
+    r₂ = sqrt((x-d₂)^2 + y^2 + z^2) # compute distance to secondary
     return r₁, r₂
 end
 
@@ -94,7 +122,6 @@ end
 Compute position vector of L1 in a normalized CR3BP given the CR3BP system `sys`.
 """
 computeL1(sys::System; tol=1e-15) = computeL1(sys.μ, tol=tol)
-
 
 """
     computeL1(p::Array;tol=1e-15)
@@ -131,7 +158,6 @@ function computeL2(μ;tol=1e-15)
 end
 computeL2(sys::System; tol=1e-15) = computeL2(sys.μ, tol=tol)
 
-
 """
     computeL2(p::Array;tol=1e-15)
 
@@ -167,7 +193,6 @@ function computeL3(μ;tol=1e-15)
 end
 
 computeL3(sys::System; tol=1e-15) = computeL3(sys.μ, tol=tol)
-
 
 """
     computeL3(p::Array;tol=1e-15)
@@ -270,17 +295,10 @@ end
 Compute effective potential given normalized position `r` {NON} and mass parameter `μ` {NON}.
 """
 function computeΩ(r,μ)
-    if length(r) == 2 || length(r) == 4
-        x,y = r[1:2]
-        z = 0
-    elseif length(r) == 3 || length(r) == 6
-        x,y,z = r[1:3]
-    else
-        error("Invalid position vector length.")
-    end
-    x,y,z = r[1:3]
-    r₁,r₂ = computer1r2(r,μ)
-    Ω = (x^2 + y^2)/2 + (1-μ)/r₁ + μ/r₂;
+    r, = getrv(r) # make sure r is a 3-vector
+    x,y,z = r[1:3] # unpack components (z=0 if planar)
+    r₁,r₂ = computer1r2(r,μ) # compute distances to primaries
+    Ω = (x^2 + y^2)/2 + (1-μ)/r₁ + μ/r₂; # compute effective potential
     return Ω
 end
 
@@ -299,18 +317,12 @@ Compute effective potential given position `r` {km} and `p = [μ₁,μ₂,d]`
 bodies and the distance between them.
 """
 function computeΩ(r,p::Array)
-    if length(r) == 2 || length(r) == 4
-        x,y = r[1:2]
-        z = 0
-    elseif length(r) == 3 || length(r) == 6
-        x,y,z = r[1:3]
-    else
-        error("Invalid position vector length.")
-    end
-    r₁,r₂ = computer1r2(r,p)
-    μ₁,μ₂,d = p
-    n = sqrt((μ₁ + μ₂)/d^3)
-    Ω = ((x^2 + y^2)*n^2)/2 + μ₁/r₁ + μ₂/r₂;
+    r, = getrv(r) # make sure r is a 3-vector
+    x,y,z = r[1:3] # unpack components (z=0 if planar)
+    r₁,r₂ = computer1r2(r,p) # compute distances to primaries
+    μ₁,μ₂,d = p # unpack parameters
+    n = sqrt((μ₁ + μ₂)/d^3) # compute mean motion
+    Ω = ((x^2 + y^2)*n^2)/2 + μ₁/r₁ + μ₂/r₂; # compute effective potential
     return Ω
 end
 
@@ -344,24 +356,10 @@ computeUeff(r,p::Array) = computeΩ(r,p)
 Compute Jacobi constant given normalized state rv {NON} and mass parameter μ {NON}
 """
 function computeC(rv,μ)
-    if length(rv) == 2
-        r = [rv[1], rv[2], 0]
-        v = 0
-    elseif length(rv) == 3
-        r = rv[1:3]
-        v = 0
-    elseif length(rv) == 4
-        r = [rv[1], rv[2], 0]
-        v = [rv[3], rv[4], 0]
-    elseif length(rv) == 6
-        r = rv[1:3]
-        v = rv[4:6]
-    else
-        error("rv must be of length 2, 3, 4, or 6")
-    end
-    v = norm(v)
-    Ω = computeΩ(r,μ)
-    C = 2*Ω - v^2
+    r,v = getrv(rv) # make sure r and v are 3-vectors
+    Ω = computeΩ(r,μ) # compute effective potential
+    v² = norm(v)^2 # compute velocity squared
+    C = 2Ω - v² # compute Jacobi constant
     return C
 end
 
@@ -380,24 +378,10 @@ which are the gravitational parameters of the first and second primary bodies
 [km³/s²] and the distance between them [km].
 """
 function computeC(rv,p::Array)
-    if length(rv) == 2
-        r = [rv[1], rv[2], 0]
-        v = 0
-    elseif length(rv) == 3
-        r = rv[1:3]
-        v = 0
-    elseif length(rv) == 4
-        r = [rv[1], rv[2], 0]
-        v = [rv[3], rv[4], 0]
-    elseif length(rv) == 6
-        r = rv[1:3]
-        v = rv[4:6]
-    else
-        error("rv must be of length 2, 3, 4, or 6")
-    end
-    v = norm(v)
-    Ω = computeΩ(r,p)
-    C = 2*Ω - v^2
+    r,v = getrv(rv) # make sure r and v are 3-vectors
+    Ω = computeΩ(r,p) # compute effective potential
+    v² = norm(v)^2 # compute velocity squared
+    C = 2Ω - v² # compute Jacobi constant
     return C
 end
 
@@ -441,6 +425,37 @@ function computeCLpts(p::Array)
     Lpts = computeLpts(p)
     CLpts = [computeC(Lpts[i],p) for i ∈ eachindex(Lpts)]
     return CLpts
+end
+
+"""
+    rC2v(r, C, μ)
+
+Compute velocity norm given normalized position vector r {NON}, Jacobi constant {NON}, and mass parameter μ {NON}
+"""
+function rC2v(r, C, μ)
+    r, = getrv(r) # make sure r is a 3-vector
+    Ω = computeΩ(r,μ) # compute effective potential
+    v² = 2Ω - C # compute velocity squared
+    return √v² # return the velocity norm
+end
+
+"""
+    rC2v(r, C, μ)
+
+Compute velocity norm given normalized position vector r {NON}, Jacobi constant {NON}, and System sys
+"""
+rC2v(r, C, sys::System) = rC2v(r, C, sys.μ)
+
+"""
+    rC2v(r, C, p::Array)
+
+Compute velocity norm given position vector r {km}, Jacobi constant {km²/s²}, and p = [μ₁,μ₂,d]
+"""
+function rC2v(r, C, p::Array)
+    r, = getrv(r) # make sure r is a 3-vector
+    Ω = computeΩ(r,p) # compute effective potential
+    v² = 2Ω - C # compute velocity squared
+    return √v² # return the velocity norm
 end
 
 """
@@ -523,7 +538,7 @@ end
 """
     rotz(θ)
 
-# returns the rotation matrix about the z-axis by angle θ {rad}
+returns the rotation matrix about the z-axis by angle θ {rad}
 """
 function rotz(θ)
     R = [cos(θ) -sin(θ) 0;
@@ -535,7 +550,7 @@ end
 """
     rotzd(θ)
 
-# returns the rotation matrix about the z-axis by angle θ {deg}
+returns the rotation matrix about the z-axis by angle θ {deg}
 """
 function rotzd(θ)
     R = [cosd(θ) -sind(θ) 0;
@@ -547,7 +562,7 @@ end
 """
     rotlatlon(ϕ, λ; ang_unit=:deg)
 
-# returns the rotation matrix to convert from ECEF to local ENU coordinates given latitude and 
+returns the rotation matrix to convert from ECEF to local ENU coordinates given latitude and 
 """
 function rotlatlon(ϕ, λ; ang_unit=:deg)
     if ang_unit == :rad
@@ -617,7 +632,7 @@ end
 """
     mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
 
-# returns the Greenwich Mean Sidereal Time (GMST) at a given UT1 time in Modified Julian Date (MJD)
+returns the Greenwich Mean Sidereal Time (GMST) at a given UT1 time in Modified Julian Date (MJD)
 """
 function mjd2gmst(ut1_mjd; ang_unit::Symbol=:rad)
     θ₀ = 280.4606 # [deg] Greenwich Mean Sidereal time at J2000 Epoch
@@ -641,7 +656,7 @@ end
 """
     wrapto360(θ)
 
-# returns the angle θ in the range [0, 360]
+returns the angle θ in the range [0, 360]
 """
 function wrapto360(θ)
     while θ < 0;    θ += 360;   end
@@ -652,7 +667,7 @@ end
 """
     wrapto180(θ)
 
-# returns the angle θ in the range [-180, 180]
+returns the angle θ in the range [-180, 180]
 """
 function wrapto180(θ)
     while θ < -180;  θ += 360;   end
@@ -663,7 +678,7 @@ end
 """
     wrapto2pi(θ)
 
-# returns the angle θ in the range [0, 2π]
+returns the angle θ in the range [0, 2π]
 """
 function wrapto2pi(θ)
     while θ < 0;    θ += 2π;    end
@@ -674,13 +689,34 @@ end
 """
     wraptopi(θ)
 
-# returns the angle θ in the range [-π, π]
+returns the angle θ in the range [-π, π]
 """
 function wraptopi(θ)
     while θ < -π;   θ += 2π;    end
     while θ > π;    θ -= 2π;    end
     return θ
 end
+
+"""
+    eig(M)
+
+Returns the eigenvalues and eigenvectors of a monodromy matrix (or Jacobian) M in order of increasing imaginary part, then increasing real part
+Should be in order stable, unstable, identity, periodic.
+"""
+function eig(M)
+    Λ, V = eigen(M) # Get the eigenvalues and eigenvectors using LinearAlgebra package
+    sort_idx = sortperm(Λ,by=x->(abs(imag(x)),imag(x),real(x))) # Sort the eigenvalues by their imaginary magnitude, then by their real magnitude (should be in order stable, unstable, identity, periodic) 
+    if !isempty(findall(x -> x == 1, Λ)) || !isempty(findall(x -> x == 1, Λ)) # If identity is actually 1 or 0, with zero imaginary part, then we warn that the ordering will be stable, identity, unstable, periodic
+        @info "True Identity eigenvalue found. Ordering may be stable, identity, unstable, periodic."
+        sort_idx[2:4] = sort_idx[[4,2,3]] # Swap the identity and unstable eigenvalues
+    end
+    V = V[:,sort_idx]
+    Λ = Λ[sort_idx]
+    return Λ, V
+end
+
+"""
+    rot2d(θ; ang_unit=:deg)
 
 # """ # I don't think this is necessary
 #     date2str(date)

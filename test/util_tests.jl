@@ -63,6 +63,12 @@ CLpts = computeCLpts(p)
 @test_throws ErrorException computeC([1,0,0,0,1],p) # wrong size rv
 @test_throws ErrorException computeC([1,0,0,0,1],μ) # wrong size rv
 
+### test rC2v ###
+sys = earth_moon()
+r = computeL1(sys)
+C = computeC(r,sys)
+@test rC2v(r, C, sys) == 0
+
 ### test computeT ###
 a, e, i = 1, 0.5, 10
 computeT(a, e, i) == computeT(a, e, deg2rad(i), ang_unit=:rad)
@@ -121,6 +127,25 @@ mytime9 = [1993, 4, 19]
 @test wraptopi(2π) == 0.
 @test wraptopi(-2π) == 0.
 
+### test eig ###
+M = Diagonal([1, 1, exp(im*π/4), exp(-im*π/4), 3, 1/3]) # testing the ordering
+Λ, V = eig(M) # ordered eigenvalue decomposition
+@test Λ[1] == 1/3 # stable
+@test Λ[2] == 3 # unstable
+@test Λ[3] == 1 # exactly 1
+@test Λ[4] == 1 # exactly 1
+@test Λ[5] == exp(-im*π/4) # quadrant 4
+@test Λ[6] == exp(im*π/4) # quadrant 1
+
+M = Diagonal([exp(im*1e-6), exp(-im*1e-6), exp(im*π/4), exp(-im*π/4), exp(im*π/2), exp(-im*π/2)])
+Λ, V = eig(M) # ordered eigenvalue decomposition
+@test Λ[1] == exp(-im*1e-6) # approximately 1
+@test Λ[2] == exp(im*1e-6) # approximately 1
+@test Λ[3] == exp(-im*π/4) # quadrant 4
+@test Λ[4] == exp(im*π/4) # quadrant 1
+@test Λ[5] == exp(-im*π/2) # purely imaginary
+@test Λ[6] == exp(im*π/2) # purely imaginary
+
 ### test rotlatlon ###
 @test rotlatlon(π/2,-π/2,ang_unit=:rad) == I
 @test_throws ErrorException rotlatlon(0,0,ang_unit=:foo)
@@ -144,3 +169,4 @@ r = [1,0,0]
 α = 10 # deg
 r_ring = spherical_ring(c, r, α)
 @test norm.(r_ring) ≈ ones(100)
+
