@@ -69,6 +69,10 @@ r = computeL1(sys)
 C = computeC(r,sys)
 @test rC2v(r, C, sys) == 0
 
+r = computeL1(p)
+C = computeC(r,p)
+@test rC2v(r, C, p) == 0
+
 ### test computeT ###
 a, e, i = 1, 0.5, 10
 computeT(a, e, i) == computeT(a, e, deg2rad(i), ang_unit=:rad)

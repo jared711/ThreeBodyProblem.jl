@@ -34,6 +34,9 @@ rvdot = zeros(6)
 @test isnothing(CR3BPinert!(rvdot, rv_dim, p, t))
 @test rvdot == CR3BPinert(rv_dim, p, t)
 
+### CR3BPjac ###
+@test CR3BPjac(rv, sys) == CR3BPjac(rv, sys.μ)
+
 ### CR3BPstm ###
 wdot = zeros(42)
 w = [rv; reshape(I(6),36,1)]
