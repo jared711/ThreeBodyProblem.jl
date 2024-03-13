@@ -440,7 +440,7 @@ function rC2v(r, C, μ)
 end
 
 """
-    rC2v(r, C, μ)
+    rC2v(r, C, sys::System)
 
 Compute velocity norm given normalized position vector r {NON}, Jacobi constant {NON}, and System sys
 """
