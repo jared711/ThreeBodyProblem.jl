@@ -15,8 +15,14 @@ Julia is managed with juliaup (1.12 locally). This checkout is `Pkg.develop`ed i
 ```bash
 julia --project -e 'using Pkg; Pkg.test()'      # full suite (test/runtests.jl, one @safetestset per src file)
 julia --project test/util_tests.jl              # one test file; files are self-contained (using ThreeBodyProblem, Test)
-julia --project=docs docs/make.jl               # build docs (Documenter); see "Known issues" below
+julia --project=docs -e 'using Pkg; Pkg.instantiate()'   # first time only (docs/Project.toml uses [sources] path="..")
+julia --project=docs docs/make.jl               # build docs into docs/build; also runs the jldoctests
 ```
+
+The docs build is strict (Documenter 1.x): every docstring must appear in an `@docs`/`@autodocs` block on some
+page in `docs/src/`, every name listed there must exist, and every ```` ```jldoctest ```` output must match
+exactly. When adding or renaming a documented function, also update the matching `docs/src/*.md` page.
+Plots is a test-only dependency (`[extras]`/`[targets]`); the package itself depends only on RecipesBase.
 
 `test/special_tests.jl` is commented out in `runtests.jl`: it calls functions (`rich3`, `differential_corrector`,
 `invariant_manifolds`) that are not in the package.
@@ -54,12 +60,11 @@ DifferentialEquations.jl's `f(u, p, t)` / `f!(du, u, p, t)` signature, and users
 (`src/julia/main.jl:140`). Reordering or adding `System` fields breaks it. It also uses `plot!(sys; sec, Lpts,
 lims, center)`, `eig`, `stability_index`, `ThreeBodyProblem.G` and `ThreeBodyProblem.rotz`.
 
-## Known issues / modernization state
+## CI and releases
 
-- CI: `.travis.yml` is dead (Travis has run nothing since 2021). `.appveyor.yml` tests Julia 1.6 and nightly.
-  `.github/workflows/` has only TagBot. Releases are made by registering a version bump with the
-  General registry, after which TagBot tags the release.
-- `docs/make.jl` does not parse (missing comma after `target = "build"` in `deploydocs`), uses
-  `Documenter.Travis()`, and lists a `plot.md` page that does not exist. `Documenter` is wrongly in the package's
-  `[deps]` (pinned to 0.27). It belongs only in `docs/Project.toml`.
-- `example/`, `src/fig/` and `Manifest.toml` are gitignored local working dirs, not part of the package.
+GitHub Actions: `CI.yml` (tests on Julia LTS and current release, plus Windows/macOS; coverage to Codecov),
+`Documentation.yml` (builds docs and deploys to `gh-pages` via `deploydocs`), and `TagBot.yml`. Releases are made
+by bumping `version` in `Project.toml` and registering it with the General registry (Registrator), after which
+TagBot tags the release and the tag build publishes the `stable` docs.
+
+`example/`, `src/fig/`, `Manifest.toml` and `docs/Manifest.toml` are gitignored local files, not part of the package.
