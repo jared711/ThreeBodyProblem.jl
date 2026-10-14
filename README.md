@@ -1,16 +1,16 @@
 ![ThreeBodyProblem.jl](docs/src/assets/banner.png)
 
-<!--- [![Build Status](https://travis-ci.com/jared711/ThreeBodyProblem.jl.svg?branch=master)](https://travis-ci.com/jared711/ThreeBodyProblem.jl) -->
 <!---[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblem.jl/master) -->
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/jared711/ThreeBodyProblem.jl?svg=true)](https://ci.appveyor.com/project/jared711/ThreeBodyProblem-jl)
+[![CI](https://github.com/jared711/ThreeBodyProblem.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/jared711/ThreeBodyProblem.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 [![Codecov](https://codecov.io/gh/jared711/ThreeBodyProblem.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/jared711/ThreeBodyProblem.jl)
-[![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl/)
+[![Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl/stable/)
+[![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://jared711.github.io/ThreeBodyProblem.jl/dev/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jared711/ThreeBodyProblemExamples.jl/main)
 
 An astrodynamics package for working in the three-body problem.
 
 ## Requirements
-Julia 1.6+ https://julialang.org/downloads/
+Julia 1.10+ https://julialang.org/downloads/
 
 ## Installation
 ThreebodyProblem.jl is on the General Registry. That means you can download it and start using it quickly in the Julia repl
