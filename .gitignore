@@ -12,3 +12,8 @@ docs/site/
 style.txt
 example/.ipynb_checkpoints/
 
+/src/fig/
+/src/kernels/
+/example/
+
+
