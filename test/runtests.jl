@@ -1,7 +1,6 @@
 using SafeTestsets
 
-using Test, Documenter, ThreeBodyProblem
-# doctest(ThreeBodyProblem)
+using Test, ThreeBodyProblem
 
 @safetestset "dynamics.jl tests" begin
     include("dynamics_tests.jl")
