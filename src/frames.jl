@@ -434,7 +434,10 @@ See also: [`cart2azel`](@ref)
 # Examples
 ```jldoctest
 julia> azel2cart(90, 90, ang_unit=:deg)
-[0,0,1]
+3-element Vector{Float64}:
+ 0.0
+ 0.0
+ 1.0
 ```
 """
 function azel2cart(az, el, d=1; ang_unit::Symbol=:deg)
@@ -459,12 +462,12 @@ end
 
 Convert cartesian coordinates from ENU to azimuth, elevation, and magnitude
 
-See also: [`azel2cart2`](@ref)
+See also: [`azel2cart`](@ref)
 
 # Examples
 ```jldoctest
 julia> cart2azel([1,0,0], ang_unit=:deg)
-90
+(90.0, 0.0, 1.0)
 ```
 """
 function cart2azel(r_ENU; ang_unit::Symbol=:deg)

@@ -1,3 +1,9 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ThreeBodyProblem = "f5e9ba3c-56cf-4230-8a8f-3a70500a02a9"
+
+[sources]
+ThreeBodyProblem = {path = ".."}
+
+[compat]
+Documenter = "1"

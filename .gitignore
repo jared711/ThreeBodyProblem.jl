@@ -8,6 +8,7 @@
 /Manifest.toml
 /dev/
 docs/build/
+docs/Manifest.toml
 docs/site/
 style.txt
 example/.ipynb_checkpoints/

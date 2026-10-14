@@ -13,6 +13,10 @@ The [Examples](@id example) section is designed to walk a user through the basic
 
 
 
+```@docs
+ThreeBodyProblem
+```
+
 ## Outline
 ```@contents
 ```

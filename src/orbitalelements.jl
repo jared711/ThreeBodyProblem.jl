@@ -47,14 +47,15 @@ end
     cart2oe(rv::Array, μ; ang_unit::Symbol=:deg)
 
 Convert cartesian coordinates [km;km/s] in the ECI frame to orbital elements
-(a, e, i, Ω, ω, ν, Π, u, l) given gravitational parameter μ.
+(a, e, i, Ω, ω, ν, Π, u, l) and specific orbital energy ℰ given gravitational parameter μ.
+Angles that are undefined for the orbit (e.g. Ω, ω and ν of a circular equatorial orbit) are `NaN`.
 
 See also: [`oe2cart`](@ref)
 
 # Examples
 ```jldoctest
 julia> cart2oe([1,0,0,0,1,0], 1, ang_unit=:deg)
-1
+(1.0, 0.0, 0.0, NaN, NaN, NaN, NaN, NaN, 0.0, -0.5)
 ```
 
 """
@@ -144,8 +145,14 @@ See also: [`cart2oe`](@ref)
 
 # Examples
 ```jldoctest
-julia> oe2cart(1, 0, 0, 0, 0, 0, ang_unit=:deg)
-[1,0,0,0,1,0]
+julia> oe2cart(1, 0, 0, 0, 0, 0, 1, ang_unit=:deg)
+6-element Vector{Float64}:
+ 1.0
+ 0.0
+ 0.0
+ 0.0
+ 1.0
+ 0.0
 ```
 """
 function oe2cart(a,e,i,Ω,ω,ν,μ; ang_unit::Symbol=:deg)
@@ -181,7 +188,7 @@ See also: [`E2nu`](@ref), [`M2E`](@ref), [`E2M`](@ref)
 # Examples
 ```jldoctest
 julia> nu2E(180, 0.5, ang_unit=:deg)
-180
+180.0
 ```
 """
 function nu2E(ν, e; ang_unit::Symbol=:deg)
@@ -217,7 +224,7 @@ See also: [`nu2E`](@ref), [`M2E`](@ref), [`E2M`](@ref)
 # Examples
 ```jldoctest
 julia> E2nu(180, 0.5, ang_unit=:deg)
-180
+180.0
 ```
 """
 function E2nu(E, e; ang_unit::Symbol=:deg)
@@ -253,7 +260,7 @@ See also: [`M2E`](@ref)
 # Examples
 ```jldoctest
 julia> E2M(180, 0.5, ang_unit=:deg)
-180
+180.0
 ```
 """
 function E2M(E, e; ang_unit::Symbol=:deg)

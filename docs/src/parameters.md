@@ -17,7 +17,9 @@ defining common systems.
 ```@docs
 Body
 System
-set_system
+BicircularSystem
+BicircularSystem2
+EllipticalSystem
 sun_mercury
 sun_venus
 sun_earth
@@ -29,4 +31,8 @@ sun_uranus
 sun_neptune
 jupiter_europa
 saturn_enceladus
+earth_moon_sun
+sun_earth_moon
+jupiter_europa_sun
+saturn_enceladus_sun
 ```

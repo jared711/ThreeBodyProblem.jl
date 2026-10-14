@@ -11,6 +11,7 @@ R2BPdynamics
 R2BPdynamics!
 CR3BPdynamics
 CR3BPdynamics!
+CR3BPjac
 CR3BPstm
 CR3BPstm!
 CR3BPinert
@@ -19,6 +20,10 @@ CWdynamics
 CWdynamics!
 BCPdynamics
 BCPdynamics!
+BCPdynamics2
+BCPdynamics2!
 BCPstm
 BCPstm!
+ER3BPdynamics
+ER3BPdynamics!
 ```

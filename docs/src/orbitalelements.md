@@ -13,6 +13,11 @@ The classical Keplerian orbital elements are ``[a, e, i Ω, ω, ν]``. While the
 ## Functions
 
 ```@docs
-AP2a
-findrP
+cart2oe
+oe2cart
+computeME
+nu2E
+E2nu
+E2M
+M2E
 ```

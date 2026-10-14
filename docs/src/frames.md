@@ -23,8 +23,12 @@ ecef2eci
 eci2ecef
 eci2sci
 sci2eci
-dimensionalize,
-dimensionalize!,
-nondimensionalize,
+latlon2cart
+cart2latlon
+azel2cart
+cart2azel
+dimensionalize
+dimensionalize!
+nondimensionalize
 nondimensionalize!
 ```
