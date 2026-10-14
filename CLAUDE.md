@@ -55,7 +55,10 @@ DifferentialEquations.jl's `f(u, p, t)` / `f!(du, u, p, t)` signature, and users
 ## Downstream user: nrho-lagrangian-tori
 
 `~/Projects/nrho-lagrangian-tori` (QPO / invariant-torus families around Saturn–Enceladus NRHOs) depends on the
-**registered** v1.0.3, not on this checkout. Before releasing, check that it still works with these APIs:
+**registered** version, not on this checkout. To test it against this checkout before a release, copy the whole
+repo to a scratch dir (its `main.jl` overwrites files in `data/initial_conditions/`), `Pkg.develop(path=...)` this
+checkout into the copy's environment, and run `src/julia/main.jl` and `src/julia/family_pipeline.jl`;
+`parameterization-method.jl`, `stability_edge.jl` and `breakdown_analysis.jl` also load ThreeBodyProblem. It uses:
 `System(ENCELADUS, SATURN)` and the **full 20-argument positional `System` constructor**
 (`src/julia/main.jl:140`). Reordering or adding `System` fields breaks it. It also uses `plot!(sys; sec, Lpts,
 lims, center)`, `eig`, `stability_index`, `ThreeBodyProblem.G` and `ThreeBodyProblem.rotz`.
