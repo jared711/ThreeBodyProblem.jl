@@ -15,6 +15,7 @@ struct Body
     m::Float64      # mass {kg}
     R::Float64      # mean radius {km}
     a::Float64      # mean semimajor axis about parent body {km}
+    # e::Float64      # eccentricity of orbit {}
     T::Float64      # sidereal orbital period {s}
     name::String    # name of body (e.g. "Earth")
     color::Symbol   # color of the body for plotting
@@ -160,6 +161,75 @@ BicircularSystem2(prim::Body, sec::Body, ter::Body) = BicircularSystem(prim, sec
     sec.T, sec.a, prim.m+sec.m, sec.a, sec.T/2π, sec.a/(sec.T/2π), sec.a/(sec.T/2π)^2, string(prim.name,"/",sec.name,"/",ter.name))
 
 
+
+function ER3BP_RUNIT(ν, a, e) # variable RUNIT for ER3BP
+    return a*(1-e^2)/(1+e*cos(ν))
+end
+
+function ER3BP_TUNIT(ν,a, e, m₁, m₂) # variable TUNIT for ER3BP
+    return (a*(1-e^2))^(3/2)/(√(G*(m₁+m₂))*(1+e*cos(ν))^2)
+end
+
+"""
+    EllipticalSystem(prim, sec, d, T, e, mu1, mu2, mu, R1, R2, μ₁, μ₂, μ, R₁, R₂, name, MUNIT, RUNIT, TUNIT, VUNIT, AUNIT)
+    EllipticalSystem(prim::Body, sec::Body, e)
+    EllipticalSystem(sys::System, e)
+
+An Elliptical Restricted Three-Body Problem System defined by primary and secondary bodies (prim and sec) and eccentricity e
+prim::Body      # Primary body
+sec::Body       # Secondary body
+d::Float64      # {km} average distance between two primaries
+T::Float64      # {s} sidereal orbital period
+e::Float64      # {} eccentricity of the orbit
+
+μ₁::Float64     # {km³/s²} gravitational parameter of primary body
+μ₂::Float64     # {km³/s²} gravitational parameter of secondary body
+μ::Float64      # {} mass parameter
+R₁::Float64     # {km} Radius of primary body
+R₂::Float64     # {km} Radius of secondary Body
+
+name::String    # name of system (e.g. "Earth/Moon")
+MUNIT::Float64  # {kg} mass normalizing parameter
+RUNIT::Function # {km} distance normalizing parameter, a function of true anomaly ν
+TUNIT::Function # {s} time normalizing parameter, a function of true anomaly ν
+VUNIT::Function # {km/s} velocity normalizing parameter, a function of true anomaly ν
+AUNIT::Function # {km/s²} acceleration normalizing parameter, a function of true anomaly ν
+"""
+struct EllipticalSystem
+    prim::Body      # Primary body
+    sec::Body       # Secondary body
+    d::Float64      # {km} average distance between two primaries
+    T::Float64      # {s} sidereal orbital period
+    e::Float64      # {} eccentricity of the orbit
+
+    # non-unicode
+    # Added these since it is unwise to require unicode operators from the user
+    mu1::Float64     # {km^3/s^2} gravitational parameter of primary body
+    mu2::Float64     # {km^3/s^2} gravitational parameter of secondary body
+    mu::Float64      # {} mass parameter
+    R1::Float64     # {km} Radius of primary Body
+    R2::Float64     # {km} Radius of Secondary Body
+
+    #unicode
+    μ₁::Float64     # {km^3/s^2} gravitational parameter of primary body
+    μ₂::Float64     # {km^3/s^2} gravitational parameter of secondary body
+    μ::Float64      # {} mass parameter
+    R₁::Float64     # {km} Radius of primary Body
+    R₂::Float64     # {km} Radius of Secondary Body
+
+    name::String    # name of system (e.g. "Earth/Moon")
+    MUNIT::Float64  # {kg} mass normalizing parameter
+    RUNIT::Function  # {km} distance normalizing parameter
+    TUNIT::Function  # {s} time normalizing parameter
+    VUNIT::Function  # {km/s} velocity normalizing parameter
+    AUNIT::Function  # {km/s^2} acceleration normalizing parameter
+
+end
+EllipticalSystem(prim::Body, sec::Body, e::Float64) = EllipticalSystem(prim, sec, sec.a, sec.T, e,
+    prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), prim.R, sec.R,
+    prim.m*G, sec.m*G, sec.m/(prim.m+sec.m), prim.R, sec.R,
+    string(prim.name,"/",sec.name," ER3BP"), prim.m+sec.m, (ν)->ER3BP_RUNIT(ν, sec.a, e), (ν)->ER3BP_TUNIT(ν, sec.a, e, prim.m, sec.m), (ν)->ER3BP_RUNIT(ν, sec.a, e)/ER3BP_TUNIT(ν, sec.a, e, prim.m, sec.m), (ν)->ER3BP_RUNIT(ν, sec.a, e)/ER3BP_TUNIT(ν, sec.a, e, prim.m, sec.m)^2)
+EllipticalSystem(sys::System, e::Float64) = EllipticalSystem(sys.prim, sys.sec, e)
 ### Setting Parameters for Various Bodies and Systems
 # Values from wikipedia
 SUN         = Body(1.98847e30,  695700,     0.0,            0.0,            "Sun",  :yellow) # The sun does not orbit a central body
@@ -167,7 +237,7 @@ SUN         = Body(1.98847e30,  695700,     0.0,            0.0,            "Sun
 ## Planets
 # Values from:
 # m, R, T - https://ssd.jpl.nasa.gov/?planet_phys_par,
-# a - https://ssd.jpl.nasa.gov/txt/p_elem_t2.txt
+# a - https://ssd.jpl.nasa.gov/txt/p_elem_t2.txt  https://ssd.jpl.nasa.gov/sats/elem/
 MERCURY     = Body(0.330114e24,             2439.4,     0.38709843*AU,  0.2408467*JY,   "Mercury",  :grey)
 VENUS       = Body(4.86747e24,              6051.8,     0.72332102*AU,  0.61519726*JY,  "Venus",    :orange)
 EARTH       = Body(5.97237e24,              6371.0084,  1.00000018*AU,  1.0000174*JY,   "Earth",    :blue)

@@ -78,3 +78,14 @@ bisys = earth_moon_sun()
 @test isnothing(BCPdynamics2!(rvdot, rv, bisys, t))
 @test isnothing(BCPdynamics2!(rvdot, rv, bisys.μ, bisys.m3, bisys.n3, t))
 @test rvdot == BCPdynamics2(rv, bisys, t)
+
+### ER3BPdynamics ###
+esys = EllipticalSystem(sys, 0.0549)
+ν = 1.0
+@test isnothing(ER3BPdynamics!(rvdot, rv, esys, ν))
+@test rvdot == ER3BPdynamics(rv, esys, ν)
+@test isnothing(ER3BPdynamics!(rvdot, rv, esys.μ, esys.e, ν))
+@test rvdot == ER3BPdynamics(rv, esys.μ, esys.e, ν)
+# reduces to the CR3BP when e = 0
+@test ER3BPdynamics(rv, μ, 0.0, ν) ≈ CR3BPdynamics(rv, μ, t)
+@test ER3BPdynamics(rv, EllipticalSystem(sys, 0.0), ν) ≈ CR3BPdynamics(rv, sys, t)

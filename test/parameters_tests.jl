@@ -70,3 +70,25 @@ sys = jupiter_europa_sun()
 @test sys.name == "Jupiter/Europa/Sun"
 sys = saturn_enceladus_sun()
 @test sys.name == "Saturn/Enceladus/Sun"
+
+### EllipticalSystem ###
+sys = earth_moon()
+e = 0.0549
+esys = EllipticalSystem(sys, e)
+@test esys isa EllipticalSystem
+@test esys.e == e
+@test esys.μ == sys.μ
+@test esys.μ₁ == sys.μ₁
+@test esys.μ₂ == sys.μ₂
+@test esys.d == sys.d
+@test esys.name == "Earth/Moon ER3BP"
+@test EllipticalSystem(EARTH, MOON, e).μ == esys.μ
+# RUNIT is the primaries' separation: periapsis at ν = 0, apoapsis at ν = π
+@test esys.RUNIT(0) ≈ sys.d*(1 - e)
+@test esys.RUNIT(π) ≈ sys.d*(1 + e)
+@test esys.VUNIT(1.0) ≈ esys.RUNIT(1.0)/esys.TUNIT(1.0)
+@test esys.AUNIT(1.0) ≈ esys.RUNIT(1.0)/esys.TUNIT(1.0)^2
+# with e = 0, units match the CR3BP (TUNIT from Kepler's 3rd law vs tabulated period)
+csys = EllipticalSystem(sys, 0.0)
+@test csys.RUNIT(1.0) ≈ sys.RUNIT
+@test isapprox(csys.TUNIT(1.0), sys.TUNIT, rtol=1e-2)

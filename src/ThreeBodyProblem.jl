@@ -23,6 +23,7 @@ export    Body,
           System,
           BicircularSystem,
           BicircularSystem2,
+          EllipticalSystem,
           sun_mercury,
           sun_venus,
           sun_earth,
@@ -116,7 +117,9 @@ export    R2BPdynamics!,
           BCPdynamics2!,
           BCPdynamics2,
           BCPstm!,
-          BCPstm
+          BCPstm,
+          ER3BPdynamics,
+          ER3BPdynamics!
 
 include("orbitalelements.jl")
 export    cart2oe,

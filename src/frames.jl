@@ -55,12 +55,17 @@ function rot2inert(rv, θ, μ; origin=:barycenter)
     if origin == :barycenter # default
         rv_offset = zeros(6) # no shift
     elseif origin == :prim # primary
-        rv_offset = -μ*[cθ, sθ, 0, -sθ, cθ, 0]
+        rv_offset = -μ*[cθ, sθ, 0, -sθ, cθ, 0] # position of the primary in the inertial frame
     elseif origin == :sec # secondary
-        rv_offset = (1-μ)*[cθ, sθ, 0, -sθ, cθ, 0]
+        rv_offset = (1-μ)*[cθ, sθ, 0, -sθ, cθ, 0] # position of the secondary in the inertial frame
     else
         error("origin should be :barycenter, :prim, or :sec")
     end
+    #### Better way of doing it ###
+    # rv = C*(rv - [-μ,0,0,0,0,0]) # primary
+    # rv = C*(rv - [1-μ,0,0,0,0,0]) # secondary
+    # rv = C*rv # bary
+    ###############################
     rv = C*rv - rv_offset # rotate and shift
     return rv
 end
@@ -158,10 +163,10 @@ function inert2rot(rv, t, μ; origin=:barycenter)
     if origin == :barycenter
         rv_offset = zeros(6) # no shift
     elseif origin == :prim
-        rv_offset = -μ*[ct, st, 0, -st, ct, 0]
+        rv_offset = -μ*[ct, st, 0, -st, ct, 0] # location of the primary in the inertial frame
         #  [A; B]*[-μ,0,0] # shift from primary centered
     elseif origin == :sec
-        rv_offset = (1-μ)*[ct, st, 0, -st, ct, 0]
+        rv_offset = (1-μ)*[ct, st, 0, -st, ct, 0] # location of the secondary in the inertial frame
         # [A;B]*[1-μ,0,0] # shift from secondary centered
     else
         error("origin should be :barycenter, :prim, or :sec")

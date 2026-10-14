@@ -557,4 +557,53 @@ function BCPstm!(wdot,w,sys::BicircularSystem,t) #Three body dynamics in Earth/M
     return nothing
 end
 
+"""
+    ER3BPdynamics(rv, μ, e, ν)
+
+Compute derivative of state vector `rv = [r; v]` {NON, NON} with respect to true anomaly `ν`
+{rad} in the pulsating rotating frame of the normalized ER3BP, where `μ` is the mass parameter
+μ₂/(μ₁+μ₂) {NON} and `e` is the eccentricity of the primaries' orbit {}.
+"""
+function ER3BPdynamics(rv, μ, e, ν)
+    x,y,z,ẋ,ẏ,ż = rv
+    # calculate cube of distances to both primaries
+    r₁³ = (  (x+μ)^2 + y^2 + z^2)^1.5 # distance to m1, LARGER MASS
+    r₂³ = ((x-1+μ)^2 + y^2 + z^2)^1.5 # distance to m2, smaller mass
+    # assign time derivative state vector elements
+    rvdot = zeros(6)
+    rvdot[1:3] = [ẋ;ẏ;ż]
+    rvdot[4] = (x - (1-μ)*(x+μ)/r₁³ - μ*(x-1+μ)/r₂³)/(1+e*cos(ν)) + 2*ẏ 
+    rvdot[5] = (y - (1-μ)*    y/r₁³ - μ*      y/r₂³)/(1+e*cos(ν)) - 2*ẋ
+    rvdot[6] = (z - (1-μ)*    z/r₁³ - μ*      z/r₂³)/(1+e*cos(ν)) - z
+    return rvdot
+end
+
+"""
+    ER3BPdynamics(rv, sys::EllipticalSystem, ν)
+
+Compute derivative of state vector `rv = [r; v]` {NON, NON} with respect to true anomaly `ν`
+{rad} in the pulsating rotating frame of the normalized ER3BP defined by `sys`.
+"""
+ER3BPdynamics(rv, sys::EllipticalSystem, ν) = ER3BPdynamics(rv, sys.μ, sys.e, ν)
+
+"""
+    ER3BPdynamics!(rvdot, rv, μ, e, ν)
+
+In-place version of `ER3BPdynamics(rv, μ, e, ν)`.
+"""
+function ER3BPdynamics!(rvdot, rv, μ, e, ν)
+    rvdot[:] = ER3BPdynamics(rv, μ, e, ν)
+    return nothing
+end
+
+"""
+    ER3BPdynamics!(rvdot, rv, sys::EllipticalSystem, ν)
+
+In-place version of `ER3BPdynamics(rv, sys::EllipticalSystem, ν)`.
+"""
+function ER3BPdynamics!(rvdot, rv, sys::EllipticalSystem,ν)
+    rvdot[:] = ER3BPdynamics(rv, sys, ν)
+    return nothing
+end
+
 #TODO: Should I make t=0 the default for all these dynamics functions?
